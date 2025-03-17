@@ -37,7 +37,7 @@ export default function Timer() {
             } else {
               playAlarm();
               if (currentRep < repetitions) {
-                setCurrentRep((r) => r + 0.5);
+                setCurrentRep((r) => r + 1);
                 return timerDuration;
               } else {
                 setRunning(false);
