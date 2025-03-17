@@ -1,6 +1,7 @@
 {
   "name": "project544",
   "version": "0.1.0",
+  "main": "app/entry_page",
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
