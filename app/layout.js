@@ -25,6 +25,11 @@ export default function RootLayout({ children }) {
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         {children}
+
+        {/* Footer centré et fixe */}
+        <footer className="footer">
+          <a href="entry_page" className="footer-button">Retour à la page d'accueil</a>
+        </footer>
       </body>
     </html>
   );

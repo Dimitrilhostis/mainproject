@@ -24,3 +24,36 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Footer fixe en bas et centré */
+.footer {
+  position: fixed;
+  bottom: 20px; /* distance du bas */
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  z-index: 10;
+}
+
+/* Style du bouton */
+.footer-button {
+  background-color: #4CAF50; /* Couleur du bouton */
+  color: white;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  text-decoration: none;
+  text-align: center;
+  display: inline-block;
+  transition: all 0.3s ease; /* Transition pour l'animation */
+}
+
+/* Effet au survol */
+.footer-button:hover {
+  background-color: #45a049; /* Changer la couleur au survol */
+  transform: scale(1.05); /* Légère agrandissement au survol */
+}
