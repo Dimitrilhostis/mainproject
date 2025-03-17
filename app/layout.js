@@ -28,7 +28,7 @@ export default function RootLayout({ children }) {
 
         {/* Footer centré et fixe */}
         <footer className="footer">
-          <a href="entry_page" className="footer-button">Retour à la page d'accueil</a>
+          <a href="entry_page" className="footer-button">Retour à la page d&apos;accueil</a>
         </footer>
       </body>
     </html>
