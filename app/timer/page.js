@@ -5,6 +5,7 @@ import Button from "@components/buttons/button";
 import CustomCard from "@components/cards/custom_card";
 import SelectSound from "@components/selects/select_sound"
 import { motion } from "framer-motion";
+import BackToEntryButton from "@components/buttons/back_to_entry"; 
 
 export default function Timer() {
   const [mode, setMode] = useState("chronometer");
@@ -103,6 +104,9 @@ export default function Timer() {
             <SelectSound SelectSound={SelectSound} sounds={sounds} setSelectedSound={setSelectedSound}></SelectSound>
           )}
       </CustomCard>
+      <footer className="text-white text-center py-15">
+          <BackToEntryButton></BackToEntryButton>
+      </footer>
     </div>
   );
 }
