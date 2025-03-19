@@ -3,13 +3,16 @@
 import { useState, useEffect, useCallback } from "react";
 import Button from "@components/buttons/button";
 import CustomCard from "@components/cards/custom_card";
-import SelectSound from "@components/selects/select_sound"
+import SelectSound from "@components/selects/select_sound";
 import { motion } from "framer-motion";
 import BackToEntryButton from "@components/buttons/back_to_entry"; 
 
 export default function Timer() {
   const [mode, setMode] = useState("chronometer");
   const [time, setTime] = useState(0);
+  const [hours, setHours] = useState(0); 
+  const [minutes, setMinutes] = useState(0); 
+  const [seconds, setSeconds] = useState(0); 
   const [timerDuration, setTimerDuration] = useState(0);
   const [running, setRunning] = useState(false);
   const [repetitions, setRepetitions] = useState(1);
@@ -38,7 +41,7 @@ export default function Timer() {
           if (prev > 0) return prev - 1;
           playAlarm();
           if (currentRep < repetitions) {
-            setCurrentRep((r) => r + 0.5);
+            setCurrentRep((r) => r + 1);
             return timerDuration;
           } else {
             setRunning(false);
@@ -54,7 +57,9 @@ export default function Timer() {
     if (running) {
       setRunning(false);
     } else {
-      if (mode === "timer") setTime(timerDuration);
+      const totalSeconds = hours * 3600 + minutes * 60 + seconds;
+      setTimerDuration(totalSeconds);
+      if (mode === "timer") setTime(totalSeconds);
       setRunning(true);
       setCurrentRep(1);
     }
@@ -62,50 +67,103 @@ export default function Timer() {
 
   const reset = () => {
     setRunning(false);
-    setTime(mode === "timer" ? timerDuration : 0);
+    setHours(0);
+    setMinutes(0);
+    setSeconds(0);
+    setTime(0);
     setCurrentRep(1);
   };
 
-  return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white p-4">
-      <CustomCard className="w-full max-w-md p-6 bg-gray-800 shadow-xl rounded-2xl">
-          <div className="flex justify-center mb-6">
-            <Button onClick={() => setMode("chronometer")} variant={mode === "chronometer" ? "default" : "outline"}>
-              Chronomètre
-            </Button>
-            <Button onClick={() => setMode("timer")} variant={mode === "timer" ? "default" : "outline"}>
-              Minuteur
-            </Button>
-          </div>
-          {mode === "timer" && (
-            <div className="mb-4">
-              <label className="block mb-2">Temps (secondes)</label>
-              <input type="number" value={timerDuration} 
-              onChange={(e) => setTimerDuration(Math.max(0, parseInt(e.target.value) || 0))} 
-              className="w-full p-2 text-black rounded-lg" 
-              onFocus={(e) => e.target.select()}/>
+  // Mettre à jour `time` immédiatement lors du changement de `timerDuration` ou `repetitions`
+  useEffect(() => {
+    if (mode === "timer") {
+      setTime(timerDuration);
+    }
+  }, [timerDuration, repetitions, mode]);
 
-              <label className="block mt-4 mb-2">Répétitions</label>
-              <input type="number" value={repetitions} 
-              onChange={(e) => setRepetitions(Math.max(1, parseInt(e.target.value) || 1))} 
-              className="w-full p-2 text-black rounded-lg" 
-              onFocus={(e) => e.target.select()}/>
+  return (
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white p-6">
+      <CustomCard className="w-full max-w-md p-6 bg-gray-800 shadow-xl rounded-2xl">
+        <div className="flex justify-center gap-4 mb-6">
+          <Button onClick={() => setMode("chronometer")} variant={mode === "chronometer" ? "default" : "outline"} className="w-1/2 py-2 text-lg">
+            Chronomètre
+          </Button>
+          <Button onClick={() => setMode("timer")} variant={mode === "timer" ? "default" : "outline"} className="w-1/2 py-2 text-lg">
+            Minuteur
+          </Button>
+        </div>
+
+        {mode === "timer" && (
+          <div className="grid grid-cols-4 gap-4 mb-6">
+            {/* Champ Heures */}
+            <div className="flex flex-col">
+              <label className="text-sm mb-2">Heures</label>
+              <input
+                type="number"
+                value={hours}
+                onChange={(e) => setHours(Math.max(0, parseInt(e.target.value) || 0))}
+                className="w-full p-2 text-white bg-gray-700 rounded-lg shadow-md"
+                onFocus={(e) => e.target.select()}
+              />
             </div>
-          )}
-            <motion.div className="text-5xl font-bold mb-6 text-center" animate={{ scale: running ? 1.1 : 1 }}>
-              {new Date(time * 1000).toISOString().substr(14, 5)}
-            </motion.div>
-          {mode === "timer" && <div className="text-center mb-4">Répétition {currentRep} / {repetitions}</div>}
-          <div className="flex justify-center gap-4 mb-4">
-            <Button onClick={toggleStartStop} variant={running ? "destructive" : "default"}>{running ? "Arrêter" : "Démarrer"}</Button>
-            {!running && <Button onClick={reset} variant="outline">Réinitialiser</Button>}
+
+            {/* Champ Minutes */}
+            <div className="flex flex-col">
+              <label className="text-sm mb-2">Minutes</label>
+              <input
+                type="number"
+                value={minutes}
+                onChange={(e) => setMinutes(Math.max(0, parseInt(e.target.value) || 0))}
+                className="w-full p-2 text-white bg-gray-700 rounded-lg shadow-md"
+                onFocus={(e) => e.target.select()}
+              />
+            </div>
+
+            {/* Champ Secondes */}
+            <div className="flex flex-col">
+              <label className="text-sm mb-2">Secondes</label>
+              <input
+                type="number"
+                value={seconds}
+                onChange={(e) => setSeconds(Math.max(0, parseInt(e.target.value) || 0))}
+                className="w-full p-2 text-white bg-gray-700 rounded-lg shadow-md"
+                onFocus={(e) => e.target.select()}
+              />
+            </div>
+
+            {/* Champ Répétitions */}
+            <div className="flex flex-col">
+              <label className="text-sm mb-2">Répétitions</label>
+              <input
+                type="number"
+                value={repetitions}
+                onChange={(e) => setRepetitions(Math.max(1, parseInt(e.target.value) || 1))}
+                className="w-full p-2 text-white bg-gray-700 rounded-lg shadow-md"
+                onFocus={(e) => e.target.select()}
+              />
+            </div>
           </div>
-          {mode === "timer" && (
-            <SelectSound SelectSound={SelectSound} sounds={sounds} setSelectedSound={setSelectedSound}></SelectSound>
-          )}
+        )}
+
+        {/* Affichage du timer */}
+        <motion.div className="text-6xl font-bold mb-6 text-center text-gray-300" animate={{ scale: running ? 1.1 : 1 }}>
+          {mode === "timer" ? new Date(time * 1000).toISOString().substr(11, 8) : new Date(time * 1000).toISOString().substr(11, 8)}
+        </motion.div>
+
+        {mode === "timer" && <div className="text-center mb-4 text-lg">Répétition {currentRep} / {repetitions}</div>}
+
+        <div className="flex justify-center gap-6 mb-6">
+          <Button onClick={toggleStartStop} variant={running ? "destructive" : "default"} className="w-1/2 py-3 text-xl">{running ? "Arrêter" : "Démarrer"}</Button>
+          {!running && <Button onClick={reset} variant="outline" className="w-1/2 py-3 text-xl">Réinitialiser</Button>}
+        </div>
+
+        {mode === "timer" && (
+          <SelectSound SelectSound={SelectSound} sounds={sounds} setSelectedSound={setSelectedSound}></SelectSound>
+        )}
       </CustomCard>
-      <footer className="text-white text-center py-15">
-          <BackToEntryButton></BackToEntryButton>
+
+      <footer className="text-white text-center py-6 mt-6">
+        <BackToEntryButton></BackToEntryButton>
       </footer>
     </div>
   );
