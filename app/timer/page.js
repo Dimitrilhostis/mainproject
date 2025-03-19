@@ -93,7 +93,7 @@ export default function Timer() {
         </div>
 
         {mode === "timer" && (
-          <div className="grid grid-cols-3 gap-4 mb-6">
+          <div className="grid grid-cols-4 gap-4 mb-6">
             {/* Champ Temps */}
             <div className="flex flex-col">
               <label className="text-sm mb-2">Heures</label>
