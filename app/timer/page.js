@@ -133,6 +133,19 @@ export default function Timer() {
           </div>
         )}
 
+        {/* Champ Répétitions */}
+        <div className="flex flex-col mb-6">
+          <label className="text-sm mb-2">Répétitions</label>
+          <input
+            type="number"
+            value={repetitions}
+            onChange={(e) => setRepetitions(Math.max(1, parseInt(e.target.value) || 1))}
+            className="w-full p-3 text-white bg-gray-700 rounded-lg shadow-md"
+            onFocus={(e) => e.target.select()}
+            placeholder="Répétitions"
+          />
+        </div>
+
         {/* Affichage du timer */}
         <motion.div className="text-6xl font-bold mb-6 text-center text-gray-300" animate={{ scale: running ? 1.1 : 1 }}>
           {mode === "timer" ? new Date(time * 1000).toISOString().substr(11, 8) : new Date(time * 1000).toISOString().substr(11, 8)}
