@@ -74,7 +74,6 @@ export default function Timer() {
     setCurrentRep(1);
   };
 
-  // Mettre à jour `time` immédiatement lors du changement de `timerDuration` ou `repetitions`
   useEffect(() => {
     if (mode === "timer") {
       setTime(timerDuration);
@@ -82,64 +81,53 @@ export default function Timer() {
   }, [timerDuration, repetitions, mode]);
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white p-6">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-900 text-white p-4">
       <CustomCard className="w-full max-w-md p-6 bg-gray-800 shadow-xl rounded-2xl">
         <div className="flex justify-center gap-4 mb-6">
-          <Button onClick={() => setMode("chronometer")} variant={mode === "chronometer" ? "default" : "outline"} className="w-1/2 py-2 text-lg">
-            Chronomètre
+          <Button onClick={() => setMode("chronometer")} variant={mode === "chronometer" ? "default" : "outline"} className="w-1/2 py-3 text-lg">
+            Chrono
           </Button>
-          <Button onClick={() => setMode("timer")} variant={mode === "timer" ? "default" : "outline"} className="w-1/2 py-2 text-lg">
+          <Button onClick={() => setMode("timer")} variant={mode === "timer" ? "default" : "outline"} className="w-1/2 py-3 text-lg">
             Minuteur
           </Button>
         </div>
 
         {mode === "timer" && (
-          <div className="grid grid-cols-4 gap-4 mb-6">
-            {/* Champ Heures */}
+          <div className="grid grid-cols-3 gap-4 mb-6">
+            {/* Champ Temps */}
             <div className="flex flex-col">
               <label className="text-sm mb-2">Heures</label>
               <input
                 type="number"
                 value={hours}
                 onChange={(e) => setHours(Math.max(0, parseInt(e.target.value) || 0))}
-                className="w-full p-2 text-white bg-gray-700 rounded-lg shadow-md"
+                className="w-full p-3 text-white bg-gray-700 rounded-lg shadow-md"
                 onFocus={(e) => e.target.select()}
+                placeholder="Heures"
               />
             </div>
 
-            {/* Champ Minutes */}
             <div className="flex flex-col">
               <label className="text-sm mb-2">Minutes</label>
               <input
                 type="number"
                 value={minutes}
                 onChange={(e) => setMinutes(Math.max(0, parseInt(e.target.value) || 0))}
-                className="w-full p-2 text-white bg-gray-700 rounded-lg shadow-md"
+                className="w-full p-3 text-white bg-gray-700 rounded-lg shadow-md"
                 onFocus={(e) => e.target.select()}
+                placeholder="Minutes"
               />
             </div>
 
-            {/* Champ Secondes */}
             <div className="flex flex-col">
               <label className="text-sm mb-2">Secondes</label>
               <input
                 type="number"
                 value={seconds}
                 onChange={(e) => setSeconds(Math.max(0, parseInt(e.target.value) || 0))}
-                className="w-full p-2 text-white bg-gray-700 rounded-lg shadow-md"
+                className="w-full p-3 text-white bg-gray-700 rounded-lg shadow-md"
                 onFocus={(e) => e.target.select()}
-              />
-            </div>
-
-            {/* Champ Répétitions */}
-            <div className="flex flex-col">
-              <label className="text-sm mb-2">Répétitions</label>
-              <input
-                type="number"
-                value={repetitions}
-                onChange={(e) => setRepetitions(Math.max(1, parseInt(e.target.value) || 1))}
-                className="w-full p-2 text-white bg-gray-700 rounded-lg shadow-md"
-                onFocus={(e) => e.target.select()}
+                placeholder="Secondes"
               />
             </div>
           </div>
