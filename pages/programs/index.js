@@ -3,11 +3,7 @@
 import { useState } from 'react';
 import Layout from '../components/layout';
 import SideBar from '../components/sidebar';
-import { FaHome } from 'react-icons/fa';
-import { IoIosSearch } from 'react-icons/io';
-import { LuCrown } from 'react-icons/lu';
-import { IoSettingsSharp } from 'react-icons/io5';
-import { Card, CardSpecial } from '../components/cards/card_program'
+import Card, { CardSpecial } from '../components/cards/card_program'
 
 const samplePrograms = [
   { id: 1, title: 'Nutrition Basics', description: 'Learn the fundamentals of balanced eating.', category: 'nutrition' },

@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 /**
  * Card component with fixed dimensions and hover scale effect
  */
-export function Card({ title, content, category }) {
+export default function Card({ title, content, category }) {
   return (
     <div className="w-64 h-80 rounded-lg shadow-lg overflow-hidden bg-white flex flex-col transform transition-transform duration-200 hover:scale-105">
       <div className="p-4 flex-grow">
