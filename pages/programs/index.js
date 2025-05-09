@@ -1,9 +1,7 @@
 "use client";
 
-import { useState } from 'react';
 import Layout from '../components/layout';
 import SideBar from '../components/sidebar';
-import Card, { CardSpecial } from '../components/cards/card_program'
 
 
 export default function ProgramsPage() {

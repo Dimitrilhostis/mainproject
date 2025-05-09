@@ -1,27 +1,48 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { supabase } from '../../../lib/supabaseClient';
 
 /**
  * AuthButton
- * Un bouton rond fixé en haut à droite pour "Connexion / Inscription".
- * Utilise une balise <a> ou <button> selon les props.
- *
+ * Un bouton rond fixé en haut à droite pour "Connexion / Inscription" ou "Mon Profil | prénom" si connecté.
  * Props:
- * - text: libellé du bouton (par défaut: "Connexion / Inscription")
- * - href: chemin de la page de redirection (défaut: "/connect")
+ * - text: libellé par défaut ("Connexion / Inscription")
+ * - href: chemin de redirection (défaut: "/connect")
  * - onClick: callback au clic (optionnel)
- *
- * Usage:
- * <AuthButton />
- * <AuthButton text="Se connecter" />
- * <AuthButton href="/other-page" />
- * <AuthButton onClick={() => openModal()} />
  */
 export default function AuthButton({
-  text = 'Connexion / Inscription',
+  text: defaultText = 'Connexion / Inscription',
   href = '/connect',
   onClick,
 }) {
-  // Si un href est fourni, on utilise une balise <a>
+  const [label, setLabel] = useState(defaultText);
+
+  useEffect(() => {
+    async function checkSession() {
+      const { data: { user }, error } = await supabase.auth.getUser();
+      if (error) {
+        console.log('AuthButton: erreur getUser()', error.message);
+        return;
+      }
+      if (user) {
+        console.log('AuthButton: utilisateur connecté', user.email);
+        // Récupère le prénom depuis la table profiles
+        const { data: profile, error: profErr } = await supabase
+          .from('profiles')
+          .select('name')
+          .eq('id', user.id)
+          .single();
+        if (profErr) {
+          console.log('AuthButton: erreur fetch profile', profErr.message);
+        } else if (profile?.name) {
+          setLabel(`Mon Profil | ${profile.name}`);
+        }
+      } else {
+        console.log('AuthButton: pas de session active');
+      }
+    }
+    checkSession();
+  }, []);
+
   if (href) {
     return (
       <a
@@ -29,18 +50,17 @@ export default function AuthButton({
         onClick={onClick}
         className="fixed top-4 right-4 z-50 bg-gray-500 text-white rounded-full p-3 shadow-lg hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition"
       >
-        {text}
+        {label}
       </a>
     );
   }
 
-  // Sinon, un bouton classique
   return (
     <button
       onClick={onClick}
       className="fixed top-4 right-4 z-50 bg-gray-500 text-white rounded-full p-3 shadow-lg hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition"
     >
-      {text}
+      {label}
     </button>
   );
 }
