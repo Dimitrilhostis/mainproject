@@ -3,10 +3,11 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
-import Layout from "components/layout";
-import SideBar from "components/sidebar";
-import Loader from "components/Loader";
-import { useAuth } from "contexts/AuthContext";
+import Layout from "@/components/layout";
+import SideBar from "@/components/sidebar";
+import Loader from "@/components/loader";
+import { useAuth } from "@/contexts/auth_context";
+import Link from "next/link";
 
 export default function ForgotPasswordPage() {
   const router = useRouter();
@@ -101,12 +102,12 @@ export default function ForgotPasswordPage() {
           </form>
 
           <p className="mt-4 text-gray-600">
-            <a
+            <Link
               href="/login"
               className="text-gray-800 underline hover:text-gray-600"
             >
               Retour à la connexion
-            </a>
+            </Link>
           </p>
         </div>
       </div>

@@ -7,6 +7,7 @@ import Layout from "@/components/layout";
 import SideBar from "@/components/sidebar";
 import Loader from "@/components/loader";
 import { useAuth } from "@/contexts/auth_context";
+import Link from "next/link";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -158,19 +159,19 @@ export default function LoginPage() {
           <p className="mt-4 text-gray-600">
             {!user && method === "password" && (
               <>
-                <a
+                <Link
                   href="/forgot-password"
                   className="text-gray-800 underline hover:text-gray-600"
                 >
                   Mot de passe oublié ?
-                </a>
+                </Link>
                 {"  "}|{"  "}
-                <a
+                <Link
                   href="/signup"
                   className="text-gray-800 underline hover:text-gray-600"
                 >
                   Créer un compte
-                </a>
+                </Link>
               </>
             )}
           </p>

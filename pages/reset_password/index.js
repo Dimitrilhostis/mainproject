@@ -3,10 +3,11 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
-import Layout from "components/layout";
-import SideBar from "components/sidebar";
-import Loader from "components/Loader";
-import { supabase } from "lib/supabaseClient";
+import Layout from "@/components/layout";
+import SideBar from "@/components/sidebar";
+import Loader from "@/components/loader";
+import { supabase } from "@/lib/supabaseClient";
+import Link from "next/link";
 
 export default function ResetPasswordPage() {
   const router = useRouter();
@@ -133,12 +134,12 @@ export default function ResetPasswordPage() {
           </form>
 
           <p className="mt-4 text-gray-600">
-            <a
+            <Link
               href="/login"
               className="text-gray-800 underline hover:text-gray-600"
             >
               Retour à la connexion
-            </a>
+            </Link>
           </p>
         </div>
       </div>
