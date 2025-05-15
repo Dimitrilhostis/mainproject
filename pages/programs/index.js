@@ -9,6 +9,7 @@ import Card, { CardSpecial } from "@/components/cards/card_program";
 import Loader from "@/components/loader";
 import { useAuth } from "@/contexts/auth_context";
 import { supabase } from "@/lib/supabaseClient";
+import MobileNav from "@/components/mobile_nav";
 
 export default function ProgramsPage() {
   const router = useRouter();
@@ -67,8 +68,10 @@ export default function ProgramsPage() {
 
   return (
     <Layout>
-      <div className="flex w-screen h-screen">
-        <SideBar minWidth={65} maxWidth={250} defaultWidth={65} />
+      <div className="flex w-screen h-scree flex-col md:flex-rown">
+      <aside className="hidden md:flex">
+        <SideBar />
+      </aside>
 
         <div className="flex-1 overflow-auto bg-gray-50 p-8">
           <h1 className="text-4xl font-bold text-gray-800 mb-12 text-center">
@@ -118,6 +121,7 @@ export default function ProgramsPage() {
             )}
           </section>
         </div>
+        <MobileNav />
       </div>
     </Layout>
   );

@@ -8,6 +8,7 @@ import SideBar from "@/components/sidebar";
 import Loader from "@/components/loader";
 import { supabase } from "@/lib/supabaseClient";
 import { useAuth } from "@/contexts/auth_context";
+import MobileNav from "@/components/mobile_nav";
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -233,8 +234,10 @@ export default function SettingsPage() {
   // === rendu principal ===
   return (
     <Layout>
-      <div className="flex w-screen h-screen">
-        <SideBar minWidth={65} maxWidth={250} defaultWidth={65} />
+      <div className="flex w-screen h-screen flex-col md:flex-row">
+      <aside className="hidden md:flex">
+        <SideBar />
+      </aside>
         <div className="flex-1 p-8 bg-gray-50 overflow-auto">
           <h1 className="text-3xl font-bold text-gray-800 mb-6 text-center">
             Paramètres
@@ -264,6 +267,7 @@ export default function SettingsPage() {
           {/* contenu onglet */}
           {renderContent()}
         </div>
+        <MobileNav />
       </div>
     </Layout>
   );

@@ -7,6 +7,7 @@ import SelectSound from "@/components/selects/select_sound";
 import { motion } from "framer-motion";
 import Layout from "@/components/layout";
 import SideBar from "@/components/sidebar";
+import MobileNav from "@/components/mobile_nav";
 
 export default function Timer() {
   const [mode, setMode] = useState("chronometer");
@@ -81,8 +82,10 @@ export default function Timer() {
   }, [timerDuration, repetitions, mode]);
 
   return (
-    <div className="min-h-screen flex bg-gray-50">
-        <SideBar />
+    <div className="min-h-screen flex bg-gray-50 flex-col md:flex-row">
+        <aside className="hidden md:flex">
+          <SideBar />
+        </aside>
         <div className="flex-1 flex items-center justify-center p-8">
         <CustomCard className="w-full max-w-md p-6 bg-gray-200 shadow-xl rounded-2xl">
             <div className="flex justify-center gap-4 mb-6">
@@ -95,7 +98,7 @@ export default function Timer() {
             </div>
 
             {mode === "timer" && (
-            <div className="grid grid-cols-4 gap-4 mb-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mb-6">
                 {/* Champ Temps */}
                 <div className="flex flex-col">
                 <label className="text-sm mb-2 text-gray-500">Heures</label>
@@ -167,6 +170,7 @@ export default function Timer() {
             )}
         </CustomCard>
         </div>
+        <MobileNav />
     </div>
   );
 }

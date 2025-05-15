@@ -10,6 +10,7 @@ import { supabase } from "@/lib/supabaseClient";
 import Loader from "@/components/loader";
 import { useAuth } from "@/contexts/auth_context";
 import { motion } from "framer-motion";
+import MobileNav from "@/components/mobile_nav";
 
 // Variants Framer Motion pour les sections
 const sectionVariant = {
@@ -83,8 +84,10 @@ export default function DiscoverPage() {
 
   return (
     <Layout>
-      <div className="flex w-screen h-screen">
-        <SideBar minWidth={65} maxWidth={250} defaultWidth={65} />
+      <div className="flex w-screen h-screen flex-col md:flex-row">
+      <aside className="hidden md:flex">
+        <SideBar />
+      </aside>
         <div className="flex-1 flex flex-col bg-gray-100">
 
           {/* Header filtres */}
@@ -140,6 +143,7 @@ export default function DiscoverPage() {
             })}
           </div>
         </div>
+        <MobileNav />
       </div>
     </Layout>
   );
