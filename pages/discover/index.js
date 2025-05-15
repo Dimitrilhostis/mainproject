@@ -1,121 +1,141 @@
+// pages/discover.jsx
 "use client";
 
-import { useState, useEffect } from 'react';
-import Layout from '../components/layout';
-import SideBar from '../components/sidebar';
-import Card, { CardSpecial } from '../components/cards/card_program';
-import { supabase } from '../../lib/supabaseClient';
+import { useState, useEffect } from "react";
+import { useRouter } from "next/router";
+import Layout from "@/components/layout";
+import SideBar from "@/components/sidebar";
+import Card, { CardSpecial } from "@/components/cards/card_program";
+import { supabase } from "@/lib/supabaseClient";
+import Loader from "@/components/loader";
+import { useAuth } from "@/contexts/auth_context";
+import { motion } from "framer-motion";
 
-export default function DiscoveryPage() {
-  const [filter, setFilter] = useState('all');
+// Variants Framer Motion pour les sections
+const sectionVariant = {
+  hidden: { opacity: 0, y: 60 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.6 } },
+};
+
+export default function DiscoverPage() {
+  const router = useRouter();
+  const { user, loading: authLoading } = useAuth();
+
+  const [filter, setFilter] = useState("all");
   const [programs, setPrograms] = useState([]);
-  const [specialPrograms, setSpecialPrograms] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Chargement depuis Supabase
+  // Auth guard : redirige vers login si pas connecté
   useEffect(() => {
+    if (!authLoading && !user) {
+      router.replace("/login?from=discover");
+    }
+  }, [authLoading, user, router]);
+
+  // Chargement des données
+  useEffect(() => {
+    if (authLoading || !user) return;
+  
     async function fetchData() {
       setLoading(true);
-      // Récupère tous les programmes “simples”
-      const { data: progData, error: err1 } = await supabase
-        .from('programs')
-        .select('*');
-      if (err1) console.error('Erreur programs:', err1);
-
-      // Récupère tous les programmes “spéciaux”
-      const { data: specData, error: err2 } = await supabase
-        .from('special_programs')
-        .select('*');
-      if (err2) console.error('Erreur special_programs:', err2);
-
-      setPrograms(progData || []);
-      setSpecialPrograms(specData || []);
-      setLoading(false);
+      try {
+        const { data: progData, error: err1 } = await supabase
+          .from("programs")
+          .select("*");
+        if (err1) throw err1;
+  
+        setPrograms(progData || []);
+      } catch (err) {
+        console.error("Fetch Discover error:", err);
+        // optionnel : afficher un message d’erreur à l’utilisateur
+      } finally {
+        setLoading(false);
+      }
     }
+  
     fetchData();
-  }, []);
+  }, [authLoading, user]);
+  
 
-  // Filtrage
-  const filtered = programs.filter(
-    p => filter === 'all' || p.category === filter
-  );
-  const filteredSpecials = specialPrograms.filter(
-    p => filter === 'all' || p.category === filter
-  );
-
-  // Découpage en lignes
-  const simplePerRow = 5, specialPerRow = 4;
-  const simpleChunks = [], specialChunks = [];
-  for (let i = 0; i < filtered.length; i += simplePerRow) {
-    simpleChunks.push(filtered.slice(i, i + simplePerRow));
-  }
-  for (let i = 0; i < filteredSpecials.length; i += specialPerRow) {
-    specialChunks.push(filteredSpecials.slice(i, i + specialPerRow));
-  }
-  const maxRows = Math.max(simpleChunks.length, specialChunks.length);
-
-  if (loading) {
+  // Affiche loader pendant auth ou fetch
+  if (authLoading || loading) {
     return (
       <Layout>
         <div className="flex-1 flex items-center justify-center">
-          Chargement…
+          <Loader />
         </div>
       </Layout>
     );
   }
+
+  // Filtrage
+  const filtered = programs.filter(
+    (p) => filter === "all" || p.category === filter
+  );
+
+  // Découpage en lignes
+  const simplePerRow = 5;
+  const simpleChunks = [];
+  for (let i = 0; i < filtered.length; i += simplePerRow) {
+    simpleChunks.push(filtered.slice(i, i + simplePerRow));
+  }
+  const maxRows = Math.max(simpleChunks.length);
 
   return (
     <Layout>
       <div className="flex w-screen h-screen">
         <SideBar minWidth={65} maxWidth={250} defaultWidth={65} />
         <div className="flex-1 flex flex-col bg-gray-100">
-          <div className="relative flex items-center py-6">
+
+          {/* Header filtres */}
+          <div className="relative flex items-center py-6 bg-white shadow">
             <div className="absolute left-8 flex gap-4">
-              {['all','nutrition','sport','both'].map(cat => (
+              {["all", "nutrition", "sport"].map((cat) => (
                 <button
                   key={cat}
                   onClick={() => setFilter(cat)}
-                  className={`px-4 py-2 rounded ${
-                    filter===cat ? 'bg-gray-800 text-white' : 'bg-white text-gray-800'
-                  } shadow`}
+                  className={`px-4 py-2 rounded-full transition ${
+                    filter === cat
+                      ? "bg-gray-800 text-white"
+                      : "bg-gray-200 text-gray-800 hover:bg-gray-300"
+                  }`}
                 >
-                  {cat==='all' ? 'Tous' : cat.charAt(0).toUpperCase() + cat.slice(1)}
+                  {cat === "all"
+                    ? "Tous"
+                    : cat.charAt(0).toUpperCase() + cat.slice(1)}
                 </button>
               ))}
             </div>
-            <h1 className="mx-auto text-4xl font-bold">Nos Programmes</h1>
+            <h1 className="mx-auto text-4xl font-bold text-gray-800">
+              Nos Programmes
+            </h1>
           </div>
+
+          {/* Contenu */}
           <div className="flex-1 overflow-auto p-8">
             {Array.from({ length: maxRows * 2 }).map((_, r) => {
-              const isSimple = r % 2 === 0;
-              const idx = Math.floor(r/2);
-              const rowItems = isSimple ? simpleChunks[idx]||[] : specialChunks[idx]||[];
+              const idx = Math.floor(r / 2);
+              const rowItems = simpleChunks[idx] || []
               if (!rowItems.length) return null;
-              const cols = isSimple ? 'lg:grid-cols-5' : 'lg:grid-cols-4';
               return (
-                <div
+                <motion.div
                   key={r}
-                  className={`grid grid-cols-1 sm:grid-cols-2 md:grid-cols-${ isSimple ? 5 : 4 } ${cols} gap-6 justify-items-center mb-8`}
+                  className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6 justify-items-center mb-8`}
+                  variants={sectionVariant}
+                  initial="hidden"
+                  whileInView="visible"
+                  viewport={{ once: true, amount: 0.3 }}
                 >
-                  {rowItems.map(p =>
-                    isSimple ? (
+                  {rowItems.map((p) =>
                       <Card
                         key={p.id}
                         title={p.title}
                         content={p.description}
                         category={p.category}
                       />
-                    ) : (
-                      <CardSpecial
-                        key={p.id}
-                        title={p.title}
-                        content={p.description}
-                        extra={p.extra}
-                        category={p.category}
-                      />
                     )
-                  )}
-                </div>
+                  }
+                </motion.div>
               );
             })}
           </div>

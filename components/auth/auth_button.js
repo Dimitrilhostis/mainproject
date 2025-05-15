@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { supabase } from '../../../lib/supabaseClient';
+import { supabase } from "@/lib/supabaseClient";
 
 /**
  * AuthButton
@@ -29,7 +29,7 @@ export default function AuthButton({
         const { data: profile, error: profErr } = await supabase
           .from('profiles')
           .select('name')
-          .eq('id', user.id)
+          .eq('user_id', user.id)
           .single();
         if (profErr) {
           console.log('AuthButton: erreur fetch profile', profErr.message);
@@ -48,7 +48,7 @@ export default function AuthButton({
       <a
         href={href}
         onClick={onClick}
-        className="fixed top-4 right-4 z-50 bg-gray-500 text-white rounded-full p-3 shadow-lg hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition"
+        className="fixed top-4 right-4 mr-4 z-50 bg-gray-500 text-white rounded-full p-3 shadow-lg hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition"
       >
         {label}
       </a>

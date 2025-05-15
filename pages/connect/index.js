@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import Button from '../components/buttons/button';
-import WarningMessage from '../components/buttons/warning_button';
-import { supabase } from '../../lib/supabaseClient';
+import Button from '@/components/buttons/button';
+import WarningMessage from '@/components/buttons/warning_button';
+import { supabase } from '@/lib/supabaseClient';
 
 export default function Connect() {
   const router = useRouter();
@@ -30,7 +30,7 @@ export default function Connect() {
         const { data: profile } = await supabase
           .from('profiles')
           .select('name')
-          .eq('id', user.id)
+          .eq('user_id', user.id)
           .single();
         if (profile?.name) setUserFirstName(profile.name);
       }

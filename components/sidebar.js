@@ -7,6 +7,8 @@ import { FaHome } from 'react-icons/fa';
 import { IoIosSearch } from 'react-icons/io';
 import { LuCrown } from 'react-icons/lu';
 import { IoSettingsSharp } from 'react-icons/io5';
+import { CiClock1 } from "react-icons/ci";
+
 
 // Utilisation :
 // <SideBar
@@ -18,8 +20,8 @@ import { IoSettingsSharp } from 'react-icons/io5';
 // />
 
 const defaultMinWidth = 60;
-const defaultMaxWidth = 400;
-const defaultWidth = 250;
+const defaultMaxWidth = 250;
+const defaultWidth = 60;
 const collapseThreshold = 80;
 
 export default function SideBar({
@@ -27,6 +29,7 @@ export default function SideBar({
       { label: 'Accueil', href: '/', icon: <FaHome /> },
       { label: 'Discover', href: '/discover', icon: <IoIosSearch /> },
       { label: 'Mes programmes', href: '/programs', icon: <LuCrown /> },
+      { label: 'Timer', href: '/timer', icon: <CiClock1 /> },
     ],
   itemsBottom = [
       { label: 'Paramètres', href: '/settings', icon: <IoSettingsSharp /> },

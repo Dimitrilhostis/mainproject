@@ -1,112 +1,209 @@
+// pages/form.jsx
 "use client";
 
-import React, { useState } from 'react';
+import { useState, useEffect } from "react";
+import { useRouter } from "next/router";
+import Layout from "@/components/layout";
+import SideBar from "@/components/sidebar";
+import Loader from "@/components/loader";
+import { supabase } from "@/lib/supabaseClient";
+import { useAuth } from "@/contexts/auth_context";
 
-// Exemple de questions (on peut les remplacer ou étendre)
-const questions = [
-  { id: 1, question: "Quel est votre prénom ?", type: "text" },
-  { id: 2, question: "Quel est votre âge ?", type: "number" },
-  { id: 3, question: "Quelle est votre couleur préférée ?", type: "text" },
-];
+export default function ProfileFormPage() {
+  const router = useRouter();
+  const { user, loading: authLoading } = useAuth();
 
-export default function Form() {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [answers, setAnswers] = useState({});
-  const [value, setValue] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [profile, setProfile] = useState({
+    age: "",
+    weight_kg: "",
+    height_cm: "",
+    goal: "",
+  });
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState("");
+  const [errorMsg, setErrorMsg] = useState("");
 
-  const current = questions[currentIndex];
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // Sauvegarde la réponse courante
-    setAnswers((prev) => ({
-      ...prev,
-      [current.id]: value,
-    }));
-    setValue('');
-
-    // Passe à la question suivante si elle existe
-    if (currentIndex < questions.length - 1) {
-      setCurrentIndex((prev) => prev + 1);
-    } else {
-      // Formulaire terminé : on déclenche l'animation puis la redirection
-      console.log('Réponses finales:', { ...answers, [current.id]: value });
-
-      // Active l'écran de validation
-      setIsSubmitting(true);
-
-      // Délai aléatoire entre 5 000 et 10 000 ms (5–10 s)
-      const delay = Math.floor(Math.random() * 5000) + 5000;
-
-      // Redirection vers la page principale après le délai
-      setTimeout(() => {
-        window.location.href = '/';
-      }, delay);
+  // 1️⃣ Auth guard : si pas connecté, redirige vers /login
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.replace("/login?from=form");
     }
+  }, [authLoading, user, router]);
+
+  // 2️⃣ Chargement du profil existant
+  useEffect(() => {
+    if (authLoading || !user) return;
+
+    async function loadProfile() {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("avatar_url, name, last_name")
+        .eq("user_id", user.id)
+        .single();
+
+      if (error && error.code !== "PGRST116") {
+        // PGRST116 = no rows found
+        console.error("Fetch profile error:", error);
+        setErrorMsg("Impossible de charger ton profil.");
+      } else if (data) {
+        setProfile({
+          email: data.ameil || "",
+          avatar_url: data.avatar_url || "",
+          name: data.name || "",
+          last_name: data.last_name || "",
+        });
+      }
+      setLoading(false);
+    }
+
+    loadProfile();
+  }, [authLoading, user]);
+
+  // 3️⃣ Gestion de la saisie
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setProfile((p) => ({ ...p, [name]: value }));
   };
 
-  // Écran d'animation/validation
-  if (isSubmitting) {
+  // 4️⃣ Soumission : upsert en user_profiles
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setErrorMsg("");
+    setMessage("");
+    setSaving(true);
+
+    const payload = {
+      user_id: user.id,
+      email: user.email,
+      avatar_url: profile.avatar_url,
+      name: profile.name,
+      last_name: profile.last_name,
+    };
+
+    const { error } = await supabase
+      .from("profiles")
+      .upsert(payload, { returning: "minimal" });
+
+    if (error) {
+      console.error("Upsert profile error:", error);
+      setErrorMsg("Échec de la sauvegarde, réessaie plus tard.");
+    } else {
+      setMessage("Profil mis à jour ! Tu peux maintenant passer aux programmes.");
+    }
+    setSaving(false);
+  };
+
+  // Loader si on attend auth ou le fetch initial
+  if (authLoading || loading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 p-4 space-y-6">
-        <svg
-          className="animate-spin h-12 w-12 text-indigo-500"
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-        >
-          <circle
-            className="opacity-25"
-            cx="12"
-            cy="12"
-            r="10"
-            stroke="currentColor"
-            strokeWidth="4"
-          ></circle>
-          <path
-            className="opacity-75"
-            fill="currentColor"
-            d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
-          ></path>
-        </svg>
-        <p className="text-indigo-700 font-medium text-lg text-center">
-          Nous validons vos réponses…<br />Vous allez être redirigé(e) vers la page principale.
-        </p>
-      </div>
+      <Layout>
+        <div className="flex-1 flex items-center justify-center">
+          <Loader />
+        </div>
+      </Layout>
     );
   }
 
-  // Formulaire principal
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 p-4">
-      <form
-        onSubmit={handleSubmit}
-        className="w-full max-w-md bg-white rounded-lg shadow-md p-6"
-      >
-        <p className="text-lg font-semibold mb-4">
-          Question {currentIndex + 1} sur {questions.length}
-        </p>
+    <Layout>
+      <div className="flex w-screen h-screen">
+        <SideBar minWidth={65} maxWidth={250} defaultWidth={65} />
+        <div className="flex-1 flex flex-col items-center justify-start bg-gray-50 p-8 overflow-auto">
+          <h1 className="text-3xl font-bold text-gray-800 mb-6">
+            Ton Profil
+          </h1>
 
-        <label className="block mb-2 text-gray-700">{current.question}</label>
+          <form
+            onSubmit={handleSubmit}
+            className="w-full max-w-lg bg-white p-8 rounded-lg shadow-lg space-y-6"
+          >
+            {errorMsg && (
+              <p className="text-red-600 text-center">{errorMsg}</p>
+            )}
+            {message && (
+              <p className="text-green-600 text-center">{message}</p>
+            )}
 
-        {(current.type === 'text' || current.type === 'number') && (
-          <input
-            type={current.type}
-            value={value}
-            onChange={(e) => setValue(e.target.value)}
-            required
-            className="w-full border border-gray-300 rounded px-3 py-2 mb-4 focus:outline-none focus:ring-2 focus:ring-indigo-400"
-          />
-        )}
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <div>
+                <label
+                  htmlFor="email"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  Ton Mail
+                </label>
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  value={profile.email}
+                  onChange={handleChange}
+                  className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 transition"
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="age"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  Ton Avatar
+                </label>
+                <input
+                  id="avatr_url"
+                  name="avatar url"
+                  type="text"
+                  value={profile.avatar_url}
+                  onChange={handleChange}
+                  className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 transition"
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="name"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  Name
+                </label>
+                <input
+                  id="name"
+                  name="name"
+                  type="text"
+                  value={profile.name}
+                  onChange={handleChange}
+                  className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 transition"
+                />
+              </div>
+              <div>
+                <label
+                  htmlFor="last_name"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  Last Name
+                </label>
+                <input
+                  id="last_name"
+                  name="last_name"
+                  type="text"
+                  value={profile.last_name}
+                  onChange={handleChange}
+                  className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 transition"
+                />
+              </div>
+            </div>
 
-        <button
-          type="submit"
-          className="w-full bg-indigo-500 text-white py-2 rounded hover:bg-indigo-600 transition"
-        >
-          {currentIndex < questions.length - 1 ? 'Suivant' : 'Terminer'}
-        </button>
-      </form>
-    </div>
+            <button
+              type="submit"
+              disabled={saving}
+              className="w-full px-6 py-2 bg-gray-800 text-white font-semibold rounded-lg hover:bg-gray-700 transition disabled:opacity-50"
+            >
+              {saving ? "Sauvegarde…" : "Mettre à jour mon profil"}
+            </button>
+          </form>
+        </div>
+      </div>
+    </Layout>
   );
 }
