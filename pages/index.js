@@ -1,215 +1,171 @@
-// pages/index.jsx
 "use client";
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Layout from '@/components/layout';
 import SideBar from '@/components/sidebar';
-import ProgramCard, { CardSpecial } from '@/components/cards/card_program';
+import ProgramCard from '@/components/cards/card_program';
+import { CardSpecial } from '@/components/cards/card_program';
 import { supabase } from '../lib/supabaseClient';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/contexts/auth_context';
 import Loader from '@/components/loader';
 import MobileNav from '@/components/mobile_nav';
+import { IoClose } from 'react-icons/io5';
+import { FaMoneyBillAlt, FaFacebook, FaTwitter, FaInstagram } from 'react-icons/fa';
+import { GiBiceps } from "react-icons/gi";
+import { MdFoodBank, MdCoPresent } from "react-icons/md";
 
-// Variants Framer Motion pour les sections
-const sectionVariant = {
-  hidden: { opacity: 0, y: 60 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.6 } },
-};
+
+
+
+
+// Motion variants
+const fade = { hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { duration: 0.5 } } };
+const modalFade = { hidden: { opacity: 0, scale: 0.9 }, visible: { opacity: 1, scale: 1, transition: { type: 'spring', stiffness: 300, damping: 20 } }, exit: { opacity: 0, scale: 0.9 } };
 
 export default function HomePage() {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
-
   const [programs, setPrograms] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selectedService, setSelectedService] = useState(null);
+  const [activeTab, setActiveTab] = useState('plans');
 
-  // 1️⃣ Auth guard + redirection si pas connecté
-  useEffect(() => {
-    if (!authLoading) {
-      if (!user) {
-        router.replace('/login');
-      }
-    }
-  }, [user, authLoading, router]);
+  // Auth check
+  useEffect(() => { if (!authLoading && !user) router.replace('/login'); }, [authLoading, user]);
 
-  // 2️⃣ Chargement des programmes une fois l’auth validée
+  // Fetch programs
   useEffect(() => {
     if (authLoading || !user) return;
-
-    async function load() {
-      setLoading(true);
-      const { data: progData } = await supabase
-        .from('programs')
-        .select('*');
-      setPrograms(progData || []);
-      setLoading(false);
-    }
-    load();
+    supabase.from('programs').select('*').then(({ data }) => { setPrograms(data || []); setLoading(false); });
   }, [authLoading, user]);
 
-  // 3️⃣ Affichage du loader pendant l’authentification ou le fetch
   if (authLoading || loading) {
-    return (
-      <Layout>
-        <div className="flex-1 flex items-center justify-center">
-          <Loader />
-        </div>
-      </Layout>
-    );
+    return <Layout><div className="flex items-center justify-center h-screen w-screen"><Loader /></div></Layout>;
   }
 
-  // 4️⃣ Même découpage et rendu qu’avant
-  const simplePerRow = 5, specialPerRow = 4;
-  const simpleChunks = [], specialChunks = [];
-  for (let i = 0; i < programs.length; i += simplePerRow)
-    simpleChunks.push(programs.slice(i, i + simplePerRow));
-  const maxRows = Math.max(simpleChunks.length);
+  const services = [
+    { id: 'sport', title: 'Sportif', icone: <GiBiceps className="absolute top-4 right-4 text-purple-400 text-2xl"/> },
+    { id: 'nutrition', title: 'Nutrition', icone: <MdFoodBank className="absolute top-4 right-4 text-purple-400 text-2xl"/> },
+    { id: 'plans', title: 'Offres', icone: <FaMoneyBillAlt className="absolute top-4 right-4 text-purple-400 text-2xl"/> },
+    { id: 'demo', title: 'Démo', icone: <MdCoPresent className="absolute top-4 right-4 text-purple-400 text-2xl"/> },
+  ];
+  const planDetails = [
+    { name: 'Free', price: 'Gratuit', concept1: '3 recettes/3 mois', concept2: '3 séances/3 mois' },
+    { name: 'Basic', price: '10€/mois', concept1: '100+ recettes', concept2: '20+ entraînements' },
+    { name: 'Premium', price: '49€/mois', concept1: 'Programme adapté', concept2: 'Coachs dédiés' },
+    { name: 'VIP', price: '79€/mois', concept1: 'Accès illimité', concept2: 'Communauté VIP' }
+  ];
 
   return (
     <Layout>
-      <div className="flex w-screen h-screen flex-col md:flex-row">
-      <aside className="hidden md:flex">
-        <SideBar />
-      </aside>
-        <div className="flex-1 flex flex-col overflow-y-auto">
-          {/* HERO */}
+      <div className="flex h-screen w-screen">
+        {/* Sidebar */}
+        <aside className="hidden md:flex">
+          <SideBar />
+        </aside>
+
+        {/* Main Content */}
+        <main className="flex-1 flex flex-col overflow-auto bg-gray-50">
+
+          {/* Hero Banner */}
           <motion.section
-            className="relative h-[70vh] flex items-center justify-center bg-gradient-to-r from-gray-500 to-gray-400 text-white py-5"
-            variants={sectionVariant}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.3 }}
+            className="h-[50vh] w-full flex py-10 items-center justify-center bg-gradient-to-r from-violet-600 via-purple-500 to-pink-400 text-white"
+            variants={fade} initial="hidden" animate="visible"
           >
-            <div className="relative z-10 text-center px-6">
-              <h1 className="text-5xl font-extrabold mb-4">Atteins Tes Objectifs</h1>
-              <p className="text-xl mb-6 max-w-2xl mx-auto">
-                Coaching sportif et nutritionnel sur mesure pour transformer ton corps et ta vie.
-              </p>
-              <button className="px-10 py-5 bg-gray-100 text-gray-800 font-semibold rounded-4xl hover:bg-white">
-                Découvrir nos offres
-              </button>
+            <div className="text-center px-4">
+              <h1 className="text-5xl font-extrabold mb-8">Atteins Tes Objectifs</h1>
+              <p className="text-lg">Coaching sportif et nutritionnel sur mesure</p>
             </div>
           </motion.section>
 
-          {/* SERVICES */}
-          <motion.section
-            className="py-20 bg-gray-100"
-            variants={sectionVariant}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.3 }}
-          >
-            <h2 className="text-3xl font-bold text-center mb-12">Nos Services</h2>
-            <div className="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 px-4">
-              <CardSpecial
-                title="Coaching Sportif"
-                content="Programmes personnalisés, suivi intensif et corrections en vidéo."
-                extra="Séances en ligne ou en présentiel"
-                category="sport"
-              />
-              <CardSpecial
-                title="Nutrition Sur Mesure"
-                content="Plans alimentaires adaptés à tes objectifs et préférences."
-                extra="Recettes et listes de courses incluses"
-                category="nutrition"
-              />
-              <CardSpecial
-                title="Suivi & Motivation"
-                content="Bilan hebdo, challenges et groupe privé pour rester motivé."
-                extra="Accès à la communauté"
-                category="both"
-              />
-            </div>
-          </motion.section>
+          {/* Decorative Accent */}
+          <div className="h-4 bg-gradient-to-r from-purple-600 to-fuchsia-600" />
 
-          {/* PROGRAMMES */}
-          <motion.section
-            className="py-20"
-            variants={sectionVariant}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.3 }}
-          >
-            <h2 className="text-3xl font-bold text-center mb-12">Programmes Phare</h2>
-            <div className="px-6">
-              {Array.from({ length: maxRows * 2 }).map((_, r) => {
-                const isSimple = r % 2 === 0;
-                const idx = Math.floor(r / 2);
-                const row = isSimple ? simpleChunks[idx] || [] : specialChunks[idx] || [];
-                if (!row.length) return null;
-                const cols = isSimple ? 'lg:grid-cols-5' : 'lg:grid-cols-4';
-                return (
-                  <div
-                    key={r}
-                    className={`grid grid-cols-1 sm:grid-cols-2 ${cols} gap-6 justify-items-center mb-8`}
+          {/* Services Section */}
+          <motion.section id="services" className="py-12 px-6 bg-white" variants={fade} initial="hidden" animate="visible">
+            <div className="max-w-7xl mx-auto">
+              <h2 className="text-3xl font-bold text-gray-800 mb-8 text-center">Nos Services</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+                {services.map(s => (
+                  <motion.div
+                    key={s.id}
+                    className="relative bg-gray-100 rounded-2xl p-6 hover:bg-white hover:shadow-lg transition"
+                    whileHover={{ y: -4 }}
+                    onClick={() => setSelectedService(s.id)}
                   >
-                    {row.map(p =>
-                      isSimple ? (
-                        <ProgramCard
-                          key={p.uuid}
-                          program={p}
-                        />
-                      ) : (
-                        <CardSpecial
-                          key={p.id}
-                          title={p.title}
-                          content={p.description}
-                          extra={p.extra}
-                          category={p.category}
-                        />
-                      )
-                    )}
-
-                  </div>
-                );
-              })}
+                    {s.icone}
+                    <h3 className="text-xl font-semibold text-gray-800 mb-2">{s.title}</h3>
+                    <p className="text-gray-600">Clique pour découvrir</p>
+                  </motion.div>
+                ))}
+              </div>
             </div>
           </motion.section>
 
-          {/* TESTIMONIALS */}
-          <motion.section
-            className="py-20 bg-gray-100"
-            variants={sectionVariant}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.3 }}
-          >
-            <h2 className="text-3xl font-bold text-center mb-12">Ils Ont Transformé Leur Vie</h2>
-            <div className="max-w-4xl mx-auto space-y-8 px-4">
-              <blockquote className="bg-white p-6 rounded shadow">
-                <p className="italic">
-                  « Grâce à leur méthode, j’ai perdu 8 kg en 2 mois et retrouvé confiance en moi. »
-                </p>
-                <footer className="mt-4 font-semibold text-right">— Camille, 29 ans</footer>
-              </blockquote>
-              <blockquote className="bg-white p-6 rounded shadow">
-                <p className="italic">
-                  « Programme nutrition au top, je n’ai jamais été aussi énergique. »
-                </p>
-                <footer className="mt-4 font-semibold text-right">— Alex, 34 ans</footer>
-              </blockquote>
+          {/* Programmes Section */}
+          <section id="programs" className="py-12 px-6 bg-gray-50">
+            <div className="max-w-7xl mx-auto">
+              <div className="flex items-center justify-center mb-8">
+                <div className="h-1 w-12 bg-purple-600 mr-3"></div>
+                <h2 className="text-3xl font-bold text-gray-800">Programmes Phare</h2>
+                <div className="h-1 w-12 bg-purple-600 ml-3"></div>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+                {programs.map(p => <ProgramCard key={p.uuid} program={p} />)}
+              </div>
             </div>
-          </motion.section>
+          </section>
 
-          {/* CALL TO ACTION */}
-          <motion.section
-            className="py-20 text-center"
-            variants={sectionVariant}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.3 }}
-          >
-            <h2 className="text-4xl font-bold mb-6">Prêt·e à commencer ?</h2>
-            <p className="mb-8 text-lg">Rejoins-nous et passe à l’étape supérieure.</p>
-            <button className="px-10 py-4 bg-gray-500 text-white font-semibold rounded shadow hover:bg-gray-600">
-              Lance Ton Coaching
-            </button>
-          </motion.section>
-        </div>
-        <MobileNav />
+          {/* Decorative Footer Accent */}
+          <div className="h-2 bg-gradient-to-r from-fuchsia-600 to-violet-600" />
+
+          {/* Footer */}
+          <footer id="contact" className="bg-white py-8 shadow-inner">
+            <div className="max-w-7xl mx-auto px-6 text-center">
+              <p className="text-gray-600 mb-4">Tous droits réservés.</p>
+              <p className="text-gray-600 mb-4">@TheSmartWay</p>
+              
+            </div>
+          </footer>
+
+        </main>
       </div>
+
+      {/* Mobile Navigation */}
+      <MobileNav />
+
+      {/* Modal */}
+      <AnimatePresence>
+        {selectedService && (
+          <>
+            <motion.div className="fixed inset-0 bg-black bg-opacity-40" variants={modalFade} initial="hidden" animate="visible" exit="exit" onClick={() => setSelectedService(null)} />
+            <motion.div className="fixed inset-0 flex flex-col bg-gradient-to-br from-violet-600 via-purple-400 to-fuchsia-400 text-white overflow-auto" variants={modalFade} initial="hidden" animate="visible" exit="exit" onClick={e => e.stopPropagation()}>
+              <div className="p-4 flex justify-end"><button onClick={() => setSelectedService(null)}><IoClose size={28} /></button></div>
+              <nav className="flex justify-center space-x-4 py-2 sticky top-0 bg-transparent">
+                {services.map(s => (
+                  <button key={s.id} onClick={() => setActiveTab(s.id)} className={`px-4 py-2 rounded-full transition ${activeTab===s.id?'bg-white text-purple-600':'bg-white/30 text-white hover:bg-white/50'}`}>{s.title}</button>
+                ))}
+              </nav>
+              <div className="flex-1 p-6">
+                {activeTab==='plans' && (
+                  <div className="grid grid-cols-2 grid-rows-2 gap-6 h-full">
+                    {planDetails.map(plan => (
+                      <div key={plan.name} className="bg-white/20 p-6 rounded-2xl flex flex-col justify-between shadow-md">
+                        <div><h3 className="text-xl font-bold">{plan.name}</h3><p className="text-lg font-semibold mt-1">{plan.price}</p></div>
+                        <div className="mt-2 text-sm"><p>{plan.concept1}</p><p>{plan.concept2}</p></div>
+                        <button className="mt-4 py-2 bg-white/30 rounded-full text-white font-medium hover:bg-white/50">Choisir</button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {/* TODO: sport, nutrition, demo */}
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </Layout>
   );
 }

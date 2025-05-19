@@ -9,6 +9,9 @@ import Loader from "@/components/loader";
 import MobileNav from "@/components/mobile_nav";
 import { useAuth } from "@/contexts/auth_context";
 import { supabase } from "@/lib/supabaseClient";
+import { RiDeleteBinLine } from "react-icons/ri";
+import { IoPersonAddOutline } from "react-icons/io5";
+
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -21,14 +24,13 @@ export default function SettingsPage() {
 
   // onglets
   const TABS = [
-    { key: "profile",   label: "Profil"       },
     { key: "stats",     label: "Statistiques" },
     { key: "notif",     label: "Notifications"},
     { key: "friends",   label: "Relations"    },
     { key: "security",  label: "Sécurité"     },
     { key: "account",   label: "Compte"       },
   ];
-  const [active, setActive] = useState("profile");
+  const [active, setActive] = useState("stats");
 
   // chargement global / données
   const [loading, setLoading] = useState(true);
@@ -121,7 +123,7 @@ export default function SettingsPage() {
   return (
     <Layout>
       <div className="flex w-full min-h-screen bg-gray-50 dark:bg-gray-900">
-        <aside className="hidden md:block">
+        <aside className="hidden md:flex">
           <SideBar />
         </aside>
         <div className="flex-1 p-6 md:p-8">
@@ -148,29 +150,7 @@ export default function SettingsPage() {
           </nav>
 
           {/* Content */}
-          <div className="max-w-4xl mx-auto space-y-6">
-            {active === "profile" && (
-              <section className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
-                {err && <p className="text-red-600 mb-2">{err}</p>}
-                {msg && <p className="text-green-600 mb-2">{msg}</p>}
-                <form onSubmit={handleEmail} className="space-y-4">
-                  <div>
-                    <label className="block text-gray-700 dark:text-gray-300 mb-1">
-                      Email
-                    </label>
-                    <input
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600"
-                    />
-                  </div>
-                  <button className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-500 transition">
-                    Mettre à jour
-                  </button>
-                </form>
-              </section>
-            )}
+          <div className="w-full mx-auto space-y-6">
 
             {active === "stats" && (
               <section className="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -211,66 +191,81 @@ export default function SettingsPage() {
             )}
 
             {active === "friends" && (
-              <section className="max-w-md mx-auto space-y-4">
-                <h2 className="text-xl font-semibold">Mes Amis</h2>
-                <ul className="space-y-2">
-                  {friends.map((f) => (
-                    <li
-                      key={f}
-                      className="flex justify-between items-center bg-white dark:bg-gray-800 p-3 rounded shadow"
-                    >
-                      <span>{f}</span>
-                      <button
-                        onClick={() => removeFriend(f)}
-                        className="text-red-600 hover:text-red-400"
+              <section className="w-full flex-col columns-3 mt-10 gap-20">
+                <div className="p-10 rounded-2xl bg-gray-200 justify-center items-center">
+                  <h2 className="text-xl font-semibold mb-10">Mes Amis</h2>
+                  <ul className="space-y-2">
+                    {friends.map((f) => (
+                      <li
+                        key={f}
+                        className="flex justify-between items-center bg-white p-3 rounded shadow"
                       >
-                        Suppr.
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    placeholder="Nouvel ami"
-                    value={newFriend}
-                    onChange={(e) => setNewFriend(e.target.value)}
-                    className="flex-1 p-2 border rounded dark:bg-gray-700 dark:border-gray-600"
-                  />
-                  <button
-                    onClick={addFriend}
-                    className="px-4 bg-indigo-600 text-white rounded hover:bg-indigo-500 transition"
-                  >
-                    Ajouter
-                  </button>
-                </div>
+                        <span>{f}</span>
+                        <button
+                          onClick={() => removeFriend(f)}
+                          className="text-red-600 hover:text-red-400"
+                        >
+                          <RiDeleteBinLine className="text-xl"/>
+                        </button>
+                      </li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div className="p-10 rounded-2xl bg-gray-200">
+                    <h2 className="text-xl font-semibold mb-10">Following</h2>
+                    <ul className="space-y-2">
+                      {friends.map((f) => (
+                        <li
+                          key={f}
+                          className="flex justify-between items-center bg-white p-3 rounded shadow"
+                        >
+                          <span>{f}</span>
+                          <button
+                            onClick={() => addFriend(f)}
+                            className="text-blue-600 hover:text-blue-400"
+                          >
+                            <IoPersonAddOutline className="text-xl"/>
+                          </button>
+                          <button
+                            onClick={() => removeFriend(f)}
+                            className="text-red-600 hover:text-red-400"
+                          >
+                            <RiDeleteBinLine className="text-xl"/>
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div className="p-10 rounded-2xl bg-gray-200">
+                    <h2 className="text-xl font-semibold mb-10">Followers</h2>
+                    <ul className="space-y-2">
+                      {friends.map((f) => (
+                        <li
+                          key={f}
+                          className="flex justify-between items-center bg-white dark:bg-gray-800 p-3 rounded shadow"
+                        >
+                          <span>{f}</span>
+                          <button
+                            onClick={() => addFriend(f)}
+                            className="text-blue-600 hover:text-blue-400"
+                          >
+                            <IoPersonAddOutline className="text-xl"/>
+                          </button>
+                          <button
+                            onClick={() => removeFriend(f)}
+                            className="text-red-600 hover:text-red-400"
+                          >
+                            <RiDeleteBinLine className="text-xl"/>
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
               </section>
             )}
 
             {active === "security" && (
-              <section className="max-w-md mx-auto bg-white dark:bg-gray-800 p-6 rounded-lg shadow space-y-4">
-                {secErr && <p className="text-red-600">{secErr}</p>}
-                {secMsg && <p className="text-green-600">{secMsg}</p>}
-                <form onSubmit={handlePwd} className="space-y-4">
-                  <div>
-                    <label className="block text-gray-700 dark:text-gray-300 mb-1">
-                      Nouveau mot de passe
-                    </label>
-                    <input
-                      type="password"
-                      value={newPwd}
-                      onChange={(e) => setNewPwd(e.target.value)}
-                      className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600"
-                    />
-                  </div>
-                  <button
-                    type="submit"
-                    disabled={secLoading}
-                    className="w-full py-2 bg-indigo-600 text-white rounded hover:bg-indigo-500 transition disabled:opacity-50"
-                  >
-                    {secLoading ? "..." : "Changer"}
-                  </button>
-                </form>
+              <section className="max-w-md mx-auto bg-white p-6 rounded-lg shadow space-y-4">
               </section>
             )}
 
@@ -278,15 +273,9 @@ export default function SettingsPage() {
               <section className="max-w-md mx-auto space-y-4">
                 <button
                   onClick={() => signOut()}
-                  className="w-full py-2 flex items-center justify-center gap-2 bg-red-600 text-white rounded hover:bg-red-500 transition"
+                  className="w-full py-2 flex items-center justify-center gap-2 bg-red-100 border-2 text-red-600 border-red-600 rounded hover:bg-red-600 hover:text-red-100 transition"
                 >
                   Déconnexion
-                </button>
-                <button
-                  onClick={() => router.push("/login")}
-                  className="w-full py-2 flex items-center justify-center gap-2 bg-green-600 text-white rounded hover:bg-green-500 transition"
-                >
-                  Ajouter un compte
                 </button>
               </section>
             )}

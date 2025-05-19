@@ -21,7 +21,7 @@ export default function ProgramCard({ program }) {
   return (
     <Link href={`/programs/${program.uuid}`} passHref legacyBehavior>
       <motion.a
-        className="group relative block overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl transform hover:scale-105 transition-all"
+        className=" bg-white group relative block overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl transform hover:scale-105 transition-all"
         variants={fadeVariants}
         initial="hidden"
         animate="visible"
@@ -36,7 +36,7 @@ export default function ProgramCard({ program }) {
           />
         </div>
         <div className="p-5 bg-white rounded-b-2xl flex flex-col justify-between h-auto">
-          <h2 className="text-2xl font-semibold text-gray-800 group-hover:text-blue-600 transition-colors">
+          <h2 className="text-2xl font-semibold text-gray-800 group-hover:text-purple-600 transition-colors">
             {program.title}
           </h2>
           <p className="mt-2 text-gray-600 text-base line-clamp-3">
@@ -61,16 +61,15 @@ ProgramCard.propTypes = {
 /**
  * CardSpecial component with fixed dimensions and hover scale effect
  */
-export function CardSpecial({ title, content, extra, category }) {
+export function CardSpecial({ title, content, category }) {
   return (
-    <div className="w-80 h-96 rounded-lg shadow-xl overflow-hidden bg-white flex flex-col transform transition-transform duration-200 hover:scale-105">
+    <div className="w-80 h-92 rounded-lg shadow-xl bg-white flex flex-col transform transition-transform duration-200 hover:scale-105">
       <div className="p-6 flex-grow">
-        <h2 className="text-xl font-bold text-gray-800 mb-3 truncate">{title}</h2>
+        <h2 className="text-xl font-bold text-gray-800 mb-8 truncate m-5">{title}</h2>
         <p className="text-gray-700 text-base mb-4 overflow-auto">{content}</p>
-        <p className="text-gray-500 text-sm italic">{extra}</p>
       </div>
       {category && (
-        <div className="px-4 py-2 bg-gray-100">
+        <div className="px-6 py-2 bg-gray-100">
           <span className="text-xs uppercase font-bold text-gray-700">{category}</span>
         </div>
       )}

@@ -107,7 +107,9 @@ export default function DiscoverPage() {
   return (
     <Layout>
       <div className="flex h-screen w-screen overflow-hidden">
+        <aside className="hidden md:flex">
           <SideBar />
+        </aside>
 
         {/* Main Content */}
         <main className="flex-1 flex flex-col h-screen overflow-hidden w-full">
