@@ -3,8 +3,6 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/router";
-import Link from "next/link";
-import Image from "next/image";
 import { supabase } from "@/lib/supabaseClient";
 import Layout from "@/components/layout";
 import SideBar from "@/components/sidebar";
@@ -13,6 +11,7 @@ import Loader from "@/components/loader";
 import { useAuth } from "@/contexts/auth_context";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaFilter, FaTimes } from "react-icons/fa";
+import ProgramCard from "@/components/cards/card_program";
 
 // Framer Motion variants
 const fadeVariants = {
@@ -152,47 +151,12 @@ export default function DiscoverPage() {
           {/* Programs Grid */}
           <div className="flex-1 overflow-y-auto">
             <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-8 p-6">
-              <AnimatePresence>
-                {rows.flat().map((program) => (
-                  <Link
-                    key={program.uuid}
-                    href={`/programs/${program.uuid}`}
-                    passHref
-                    legacyBehavior
-                  >
-                    <motion.a
-                      className="group relative block overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl transform hover:scale-105 transition-all"
-                      variants={fadeVariants}
-                      initial="hidden"
-                      animate="visible"
-                      exit="hidden"
-                    >
-                    <div className="relative w-full h-64 rounded-t-2xl overflow-hidden">
-                      <Image
-                        src={
-                          program.image.startsWith("/") ? program.image : `/${program.image}`
-                        }
-                        alt={program.title}
-                        fill
-                        className="object-cover"
-                      />
-                    </div>
-                    <div className="p-5 bg-white rounded-b-2xl flex flex-col justify-between h-auto">
-                      <h2 className="text-2xl font-semibold text-gray-800 group-hover:text-blue-600 transition-colors">
-                        {program.title}
-                      </h2>
-                      <p className="mt-2 text-gray-600 text-base line-clamp-3">
-                        {program.short_description}
-                      </p>
-                      <div className="mt-4 flex items-center justify-between text-sm text-gray-500">
-                        <span>{program.duration_weeks} sem.</span>
-                        <span>{program.difficulty_rating}/5</span>
-                      </div>
-                    </div>
-                    </motion.a>
-                  </Link>
-                ))}
-              </AnimatePresence>
+            <AnimatePresence>
+              {rows.flat().map(program => (
+                <ProgramCard key={program.uuid} program={program} />
+              ))}
+            </AnimatePresence>
+
             </div>
           </div>
         </main>

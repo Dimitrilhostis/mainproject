@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Layout from '@/components/layout';
 import SideBar from '@/components/sidebar';
-import Card, { CardSpecial } from '@/components/cards/card_program';
+import ProgramCard, { CardSpecial } from '@/components/cards/card_program';
 import { supabase } from '../lib/supabaseClient';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/contexts/auth_context';
@@ -147,11 +147,9 @@ export default function HomePage() {
                   >
                     {row.map(p =>
                       isSimple ? (
-                        <Card
-                          key={p.id}
-                          title={p.title}
-                          content={p.description}
-                          category={p.category}
+                        <ProgramCard
+                          key={p.uuid}
+                          program={p}
                         />
                       ) : (
                         <CardSpecial
@@ -163,6 +161,7 @@ export default function HomePage() {
                         />
                       )
                     )}
+
                   </div>
                 );
               })}
