@@ -1,8 +1,6 @@
 // components/layout.jsx
 "use client";
 
-import SideBar from "./sidebar";
-import AuthButton from "./auth/auth_button";
 
 export default function Layout({ children }) {
   return (

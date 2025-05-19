@@ -6,100 +6,108 @@ import { useRouter } from "next/router";
 import Layout from "@/components/layout";
 import SideBar from "@/components/sidebar";
 import Loader from "@/components/loader";
-import { supabase } from "@/lib/supabaseClient";
-import { useAuth } from "@/contexts/auth_context";
 import MobileNav from "@/components/mobile_nav";
+import { useAuth } from "@/contexts/auth_context";
+import { supabase } from "@/lib/supabaseClient";
 
 export default function SettingsPage() {
   const router = useRouter();
-  const { user, loading: authLoading } = useAuth();
+  const { user, signOut, loading: authLoading } = useAuth();
 
-  // === auth guard ===
+  // Auth guard
   useEffect(() => {
-    if (!authLoading && !user) {
-      router.replace("/login?from=settings");
-    }
+    if (!authLoading && !user) router.replace("/login?from=settings");
   }, [authLoading, user, router]);
 
-  // === tabs ===
-  const tabs = ["Profil", "Statistiques", "Notifications", "Préférences"];
-  const [activeTab, setActiveTab] = useState("Profil");
+  // onglets
+  const TABS = [
+    { key: "profile",   label: "Profil"       },
+    { key: "stats",     label: "Statistiques" },
+    { key: "notif",     label: "Notifications"},
+    { key: "friends",   label: "Relations"    },
+    { key: "security",  label: "Sécurité"     },
+    { key: "account",   label: "Compte"       },
+  ];
+  const [active, setActive] = useState("profile");
 
-  // === global loading ===
+  // chargement global / données
   const [loading, setLoading] = useState(true);
 
-  // --- Profil state ---
+  // Profil
   const [email, setEmail] = useState("");
-  const [profileMsg, setProfileMsg] = useState("");
-  const [profileError, setProfileError] = useState("");
+  const [msg, setMsg] = useState("");
+  const [err, setErr] = useState("");
 
-  // --- Stats state ---
+  // Stats
   const [nutCount, setNutCount] = useState(0);
   const [sportCount, setSportCount] = useState(0);
 
-  // --- Notifications state ---
-  const [notifSettings, setNotifSettings] = useState({
+  // Notifications
+  const [notif, setNotif] = useState({
     workoutReminder: true,
     nutritionAlerts: true,
-    newsletter: true,
+    newsletter: false,
   });
 
-  // --- Preferences state ---
-  const [preferences, setPreferences] = useState({
-    theme: "Clair",
-    language: "Français",
-  });
+  // Relations
+  const [friends, setFriends] = useState(["Alice", "Bob"]);
+  const [newFriend, setNewFriend] = useState("");
 
-  // === initial data load ===
+  // Sécurité
+  const [newPwd, setNewPwd] = useState("");
+  const [secMsg, setSecMsg] = useState("");
+  const [secErr, setSecErr] = useState("");
+  const [secLoading, setSecLoading] = useState(false);
+
+  // load initial
   useEffect(() => {
     if (authLoading || !user) return;
-    async function loadData() {
+    (async () => {
       setLoading(true);
-
-      // Profil
       setEmail(user.email);
-
-      // Statistiques : head:true => renvoie count
-      const { count: nCount } = await supabase
+      const { count: n } = await supabase
         .from("personal_nutrition_plans")
         .select("id", { count: "exact", head: true });
-      const { count: sCount } = await supabase
+      const { count: s } = await supabase
         .from("personal_sport_plans")
         .select("id", { count: "exact", head: true });
-      setNutCount(nCount || 0);
-      setSportCount(sCount || 0);
-
+      setNutCount(n || 0);
+      setSportCount(s || 0);
       setLoading(false);
-    }
-    loadData();
+    })();
   }, [authLoading, user]);
 
-  // === handlers ===
-
-  // Mettre à jour l'email
-  const handleEmailUpdate = async (e) => {
+  // handlers
+  const handleEmail = async (e) => {
     e.preventDefault();
-    setProfileError("");
-    setProfileMsg("");
+    setErr(""); setMsg("");
     const { error } = await supabase.auth.updateUser({ email });
-    if (error) setProfileError(error.message);
-    else setProfileMsg("Adresse email mise à jour !");
+    if (error) setErr(error.message);
+    else setMsg("Email mis à jour !");
   };
 
-  // Toggle notifications
-  const toggleNotif = (key) => {
-    setNotifSettings((s) => ({ ...s, [key]: !s[key] }));
-    // à persister en base si tu crées une table plus tard
+  const toggleNotif = (k) =>
+    setNotif((n) => ({ ...n, [k]: !n[k] }));
+
+  const addFriend = () => {
+    const f = newFriend.trim();
+    if (f && !friends.includes(f)) {
+      setFriends([...friends, f]);
+      setNewFriend("");
+    }
+  };
+  const removeFriend = (f) =>
+    setFriends((list) => list.filter((x) => x !== f));
+
+  const handlePwd = async (e) => {
+    e.preventDefault();
+    setSecErr(""); setSecMsg(""); setSecLoading(true);
+    const { error } = await supabase.auth.updateUser({ password: newPwd });
+    setSecLoading(false);
+    if (error) setSecErr(error.message);
+    else setSecMsg("Mot de passe mis à jour !");
   };
 
-  // Changer preferences
-  const handlePrefChange = (e) => {
-    const { name, value } = e.target;
-    setPreferences((p) => ({ ...p, [name]: value }));
-    // idem : persister si besoin
-  };
-
-  // === rendu loader global ===
   if (authLoading || loading) {
     return (
       <Layout>
@@ -110,162 +118,179 @@ export default function SettingsPage() {
     );
   }
 
-  // === contenu par onglet ===
-  const renderContent = () => {
-    switch (activeTab) {
-      case "Profil":
-        return (
-          <form
-            onSubmit={handleEmailUpdate}
-            className="bg-white p-8 rounded-lg shadow-lg max-w-md mx-auto space-y-4"
-          >
-            {profileError && (
-              <p className="text-red-600 text-center">{profileError}</p>
-            )}
-            {profileMsg && (
-              <p className="text-green-600 text-center">{profileMsg}</p>
-            )}
-            <div>
-              <label
-                htmlFor="email"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Email
-              </label>
-              <input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 transition"
-              />
-            </div>
-            <button className="w-full px-6 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-700 transition">
-              Mettre à jour
-            </button>
-          </form>
-        );
-
-      case "Statistiques":
-        return (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-lg mx-auto">
-            <div className="bg-white p-6 rounded-lg shadow-lg text-center">
-              <h3 className="text-2xl font-bold text-gray-800">{nutCount}</h3>
-              <p className="text-gray-600">Plans nutritionnels</p>
-            </div>
-            <div className="bg-white p-6 rounded-lg shadow-lg text-center">
-              <h3 className="text-2xl font-bold text-gray-800">{sportCount}</h3>
-              <p className="text-gray-600">Programmes sportifs</p>
-            </div>
-          </div>
-        );
-
-      case "Notifications":
-        return (
-          <div className="space-y-4 max-w-md mx-auto">
-            {[
-              { key: "workoutReminder", label: "Rappels d’entraînements" },
-              { key: "nutritionAlerts", label: "Alertes nutritionnelles" },
-              { key: "newsletter", label: "Newsletter mensuelle" },
-            ].map(({ key, label }) => (
-              <div
-                key={key}
-                className="flex items-center justify-between bg-white p-4 rounded-lg shadow-lg"
-              >
-                <span className="text-gray-700">{label}</span>
-                <input
-                  type="checkbox"
-                  checked={notifSettings[key]}
-                  onChange={() => toggleNotif(key)}
-                  className="h-5 w-5 text-gray-800 focus:ring-gray-400 transition"
-                />
-              </div>
-            ))}
-          </div>
-        );
-
-      case "Préférences":
-        return (
-          <form className="bg-white p-8 rounded-lg shadow-lg max-w-md mx-auto space-y-6">
-            <div>
-              <label
-                htmlFor="theme"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Thème
-              </label>
-              <select
-                id="theme"
-                name="theme"
-                value={preferences.theme}
-                onChange={handlePrefChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 transition"
-              >
-                <option>Clair</option>
-                <option>Sombre</option>
-              </select>
-            </div>
-            <div>
-              <label
-                htmlFor="language"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Langue
-              </label>
-              <select
-                id="language"
-                name="language"
-                value={preferences.language}
-                onChange={handlePrefChange}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 transition"
-              >
-                <option>Français</option>
-                <option>Anglais</option>
-              </select>
-            </div>
-          </form>
-        );
-
-      default:
-        return null;
-    }
-  };
-
-  // === rendu principal ===
   return (
     <Layout>
-      <div className="flex w-screen h-screen flex-col md:flex-row">
-      <aside className="hidden md:flex">
-        <SideBar />
-      </aside>
-        <div className="flex-1 p-8 bg-gray-50 overflow-auto">
-          <h1 className="text-3xl font-bold text-gray-800 mb-6 text-center">
-            Paramètres
-          </h1>
+      <div className="flex w-full min-h-screen bg-gray-50 dark:bg-gray-900">
+        <aside className="hidden md:block">
+          <SideBar />
+        </aside>
+        <div className="flex-1 p-6 md:p-8">
+          <h1 className="text-3xl font-bold mb-4">Paramètres</h1>
 
-          {/* onglets */}
-          <div className="flex justify-center space-x-4 mb-8">
-            {tabs.map((tab) => (
-              <button
-                key={tab}
-                onClick={() => {
-                  setActiveTab(tab);
-                  setProfileMsg("");
-                  setProfileError("");
-                }}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition ${
-                  activeTab === tab
-                    ? "bg-gray-800 text-white"
-                    : "bg-gray-200 text-gray-600 hover:bg-gray-300"
-                }`}
-              >
-                {tab}
-              </button>
-            ))}
+          {/* Tabs */}
+          <nav className="border-b border-gray-200 dark:border-gray-700 mb-6 overflow-x-auto">
+            <ul className="flex space-x-4">
+              {TABS.map(({ key, label }) => (
+                <li key={key}>
+                  <button
+                    onClick={() => setActive(key)}
+                    className={`pb-2 px-1 text-sm font-medium transition 
+                      ${active === key
+                        ? "border-b-2 border-indigo-600 text-indigo-600"
+                        : "text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white"
+                      }`}
+                  >
+                    {label}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </nav>
+
+          {/* Content */}
+          <div className="max-w-4xl mx-auto space-y-6">
+            {active === "profile" && (
+              <section className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow">
+                {err && <p className="text-red-600 mb-2">{err}</p>}
+                {msg && <p className="text-green-600 mb-2">{msg}</p>}
+                <form onSubmit={handleEmail} className="space-y-4">
+                  <div>
+                    <label className="block text-gray-700 dark:text-gray-300 mb-1">
+                      Email
+                    </label>
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600"
+                    />
+                  </div>
+                  <button className="px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-500 transition">
+                    Mettre à jour
+                  </button>
+                </form>
+              </section>
+            )}
+
+            {active === "stats" && (
+              <section className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow text-center">
+                  <p className="text-4xl font-bold">{nutCount}</p>
+                  <p>Plans nutritionnels</p>
+                </div>
+                <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow text-center">
+                  <p className="text-4xl font-bold">{sportCount}</p>
+                  <p>Programmes sportifs</p>
+                </div>
+              </section>
+            )}
+
+            {active === "notif" && (
+              <section className="space-y-4 max-w-md mx-auto">
+                {Object.entries(notif).map(([k, v]) => (
+                  <label
+                    key={k}
+                    className="flex items-center justify-between bg-white dark:bg-gray-800 p-4 rounded-lg shadow"
+                  >
+                    <span className="capitalize text-gray-700 dark:text-gray-300">
+                      {k === "workoutReminder"
+                        ? "Rappels d’entraînements"
+                        : k === "nutritionAlerts"
+                        ? "Alertes nutritionnelles"
+                        : "Newsletter mensuelle"}
+                    </span>
+                    <input
+                      type="checkbox"
+                      checked={v}
+                      onChange={() => toggleNotif(k)}
+                      className="h-5 w-5 text-indigo-600"
+                    />
+                  </label>
+                ))}
+              </section>
+            )}
+
+            {active === "friends" && (
+              <section className="max-w-md mx-auto space-y-4">
+                <h2 className="text-xl font-semibold">Mes Amis</h2>
+                <ul className="space-y-2">
+                  {friends.map((f) => (
+                    <li
+                      key={f}
+                      className="flex justify-between items-center bg-white dark:bg-gray-800 p-3 rounded shadow"
+                    >
+                      <span>{f}</span>
+                      <button
+                        onClick={() => removeFriend(f)}
+                        className="text-red-600 hover:text-red-400"
+                      >
+                        Suppr.
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    placeholder="Nouvel ami"
+                    value={newFriend}
+                    onChange={(e) => setNewFriend(e.target.value)}
+                    className="flex-1 p-2 border rounded dark:bg-gray-700 dark:border-gray-600"
+                  />
+                  <button
+                    onClick={addFriend}
+                    className="px-4 bg-indigo-600 text-white rounded hover:bg-indigo-500 transition"
+                  >
+                    Ajouter
+                  </button>
+                </div>
+              </section>
+            )}
+
+            {active === "security" && (
+              <section className="max-w-md mx-auto bg-white dark:bg-gray-800 p-6 rounded-lg shadow space-y-4">
+                {secErr && <p className="text-red-600">{secErr}</p>}
+                {secMsg && <p className="text-green-600">{secMsg}</p>}
+                <form onSubmit={handlePwd} className="space-y-4">
+                  <div>
+                    <label className="block text-gray-700 dark:text-gray-300 mb-1">
+                      Nouveau mot de passe
+                    </label>
+                    <input
+                      type="password"
+                      value={newPwd}
+                      onChange={(e) => setNewPwd(e.target.value)}
+                      className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={secLoading}
+                    className="w-full py-2 bg-indigo-600 text-white rounded hover:bg-indigo-500 transition disabled:opacity-50"
+                  >
+                    {secLoading ? "..." : "Changer"}
+                  </button>
+                </form>
+              </section>
+            )}
+
+            {active === "account" && (
+              <section className="max-w-md mx-auto space-y-4">
+                <button
+                  onClick={() => signOut()}
+                  className="w-full py-2 flex items-center justify-center gap-2 bg-red-600 text-white rounded hover:bg-red-500 transition"
+                >
+                  Déconnexion
+                </button>
+                <button
+                  onClick={() => router.push("/login")}
+                  className="w-full py-2 flex items-center justify-center gap-2 bg-green-600 text-white rounded hover:bg-green-500 transition"
+                >
+                  Ajouter un compte
+                </button>
+              </section>
+            )}
           </div>
-
-          {/* contenu onglet */}
-          {renderContent()}
         </div>
         <MobileNav />
       </div>

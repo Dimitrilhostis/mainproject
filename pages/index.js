@@ -8,7 +8,6 @@ import SideBar from '@/components/sidebar';
 import Card, { CardSpecial } from '@/components/cards/card_program';
 import { supabase } from '../lib/supabaseClient';
 import { motion } from 'framer-motion';
-import Image from 'next/image';
 import { useAuth } from '@/contexts/auth_context';
 import Loader from '@/components/loader';
 import MobileNav from '@/components/mobile_nav';
@@ -24,7 +23,6 @@ export default function HomePage() {
   const { user, loading: authLoading } = useAuth();
 
   const [programs, setPrograms] = useState([]);
-  const [specials, setSpecials] = useState([]);
   const [loading, setLoading] = useState(true);
 
   // 1️⃣ Auth guard + redirection si pas connecté
