@@ -1,13 +1,12 @@
-// pages/forgot-password.jsx
 "use client";
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import Layout from "@/components/layout";
-import SideBar from "@/components/sidebar";
-import Loader from "@/components/loader";
-import { useAuth } from "@/contexts/auth_context";
+import { motion } from "framer-motion";
 import Link from "next/link";
+import Loader from "@/components/loader";
+import useAuth from "@/hooks/use_auth";
 
 export default function ForgotPasswordPage() {
   const router = useRouter();
@@ -18,12 +17,12 @@ export default function ForgotPasswordPage() {
   const [message, setMessage] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
 
-  // Si déjà connecté, on redirige
+  // Redirect if logged in
   useEffect(() => {
     if (!authLoading && user) {
       router.replace("/discover");
     }
-  }, [user, authLoading, router]);
+  }, [authLoading, user, router]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -36,17 +35,16 @@ export default function ForgotPasswordPage() {
       setErrorMsg(error.message);
     } else {
       setMessage(
-        "Si un compte existe à cette adresse, un email vient de partir pour réinitialiser ton mot de passe."
+        "Si un compte existe, un email de réinitialisation a été envoyé."
       );
     }
     setIsSubmitting(false);
   };
 
-  // Loader global ou pendant l'envoi
-  if (authLoading || isSubmitting) {
+  if (authLoading || (isSubmitting && !user)) {
     return (
       <Layout>
-        <div className="flex-1 flex items-center justify-center">
+        <div className="flex-1 flex items-center justify-center h-screen">
           <Loader />
         </div>
       </Layout>
@@ -55,30 +53,33 @@ export default function ForgotPasswordPage() {
 
   return (
     <Layout>
-      <div className="flex w-screen h-screen">
-        <SideBar minWidth={65} maxWidth={250} defaultWidth={65} />
-        <div className="flex-1 flex flex-col items-center justify-center bg-gray-50 p-8">
-          <h1 className="text-3xl font-bold text-gray-800 mb-6">
+      <div className="min-h-screen flex items-center justify-center">
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="w-full p-20 max-w-lg mx-auto bg-gradient-to-br from-pink-100 via-violet-50 to-purple-100 backdrop-blur-lg rounded-3xl shadow-2xl space-y-6"
+        >
+          <h1 className="text-4xl font-extrabold text-center text-purple-700">
             Mot de passe oublié
           </h1>
+          {errorMsg && (
+            <p className="text-center text-red-600 animate-shake">{errorMsg}</p>
+          )}
+          {message && <p className="text-center text-green-600">{message}</p>}
 
-          <form
-            onSubmit={handleSubmit}
-            className="w-full max-w-md bg-white p-8 rounded-lg shadow-lg space-y-6"
-          >
-            {errorMsg && (
-              <p className="text-red-600 text-center">{errorMsg}</p>
-            )}
-            {message && (
-              <p className="text-green-600 text-center">{message}</p>
-            )}
-
-            <div>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="relative"
+            >
               <label
                 htmlFor="email"
-                className="block text-sm font-medium text-gray-700"
+                className="absolute -top-3 left-4 bg-white/70 rounded-md px-1 text-sm text-purple-600"
               >
-                Adresse email
+                Email
               </label>
               <input
                 id="email"
@@ -86,30 +87,29 @@ export default function ForgotPasswordPage() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-400 transition"
+                className="w-full px-4 py-3 border-2 border-transparent focus:border-purple-400 rounded-xl bg-white focus:outline-none transition"
               />
-            </div>
+            </motion.div>
 
-            <button
+            <motion.button
               type="submit"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
               disabled={isSubmitting}
-              className="w-full px-6 py-2 bg-gray-800 text-white font-semibold rounded-lg hover:bg-gray-700 transition disabled:opacity-50"
+              className="w-full py-3 mt-3 bg-purple-600 text-white font-semibold rounded-xl shadow hover:bg-purple-700 transition disabled:opacity-50"
             >
               {isSubmitting
                 ? "Envoi en cours…"
                 : "Envoyer le lien de réinitialisation"}
-            </button>
+            </motion.button>
           </form>
 
-          <p className="mt-4 text-gray-600">
-            <Link
-              href="/login"
-              className="text-gray-800 underline hover:text-gray-600"
-            >
-              Retour à la connexion
+          <p className="text-center text-gray-600">
+            <Link href="/login">
+              <p className="text-purple-600 hover:underline">-&gt; Retour à la connexion</p>
             </Link>
           </p>
-        </div>
+        </motion.div>
       </div>
     </Layout>
   );

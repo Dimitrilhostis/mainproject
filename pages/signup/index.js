@@ -4,143 +4,96 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import Layout from "@/components/layout";
-import Loader from "@/components/loader";
+import { motion } from "framer-motion";
+import Link from "next/link";
 import useAuth from "@/hooks/use_auth";
 
 export default function SignUpPage() {
   const router = useRouter();
-  const { user } = useAuth();
-
-  // 1. State unique pour tout le formulaire
-  const [formState, setFormState] = useState({
-    name: "",
-    last_name: "",
-    email: "",
-    password: "",
-  });
+  const { user, signUp } = useAuth();
+  const [formState, setFormState] = useState({ name: "", last_name: "", email: "", password: "" });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
-  // 2. Si déjà connecté, on renvoie sur /discover
   useEffect(() => {
-    if (user) {
-      router.replace("/discover");
-    }
+    if (user) router.replace("/discover");
   }, [user, router]);
 
-  // 3. Handler pour mettre à jour formState
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormState((prev) => ({ ...prev, [name]: value }));
   };
 
-  // 4. Submit : on récupère bien name, last_name, email, password
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMsg("");
     setIsSubmitting(true);
-
     const { name, last_name, email, password } = formState;
-
-    // Appel à ton endpoint serverless
-    const res = await fetch("/api/auth/signup", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, last_name, email, password }),
-    });
-    const { error } = await res.json();
-
-    if (error) {
-      setErrorMsg(error);
-      setIsSubmitting(false);
-    } else {
-      router.push("/login");
-    }
+    const { error } = await signUp({ name, last_name, email, password });
+    setIsSubmitting(false);
+    if (error) setErrorMsg(error.message || "Erreur lors de la création");
+    else router.push("/login");
   };
-
-  // 5. Affichage
-  if (isSubmitting) {
-    return (
-      <Layout>
-        <Loader />
-      </Layout>
-    );
-  }
 
   return (
     <Layout>
-      <div className="w-full max-w-md bg-white p-8 rounded-lg shadow-lg space-y-6">
-        <h1 className="text-2xl font-bold text-center">Créer un compte</h1>
-        {errorMsg && <p className="text-red-600 text-center">{errorMsg}</p>}
+      <div className="min-h-screen flex items-center justify-center">
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="w-full p-20 max-w-lg mx-auto bg-gradient-to-br from-pink-100 via-violet-50 to-purple-100 backdrop-blur-lg rounded-3xl shadow-2xl space-y-6"
+        >
+          <h1 className="text-4xl font-extrabold text-center text-purple-700">
+            Créer un compte
+          </h1>
+          {errorMsg && <p className="text-center text-red-600">{errorMsg}</p>}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-              Prénom
-            </label>
-            <input
-              id="name"
-              name="name"
-              type="text"
-              required
-              value={formState.name}
-              onChange={handleChange}
-              className="mt-1 w-full px-4 py-2 border rounded"
-            />
-          </div>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {['name','last_name','email','password'].map((field, idx) => (
+              <motion.div
+                key={idx}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 * idx }}
+                className="relative"
+              >
+                <label
+                  htmlFor={field}
+                  className="absolute -top-3 left-4 bg-white/70 rounded-md px-1 text-sm text-purple-600"
+                >
+                  {field === 'name' ? 'Prénom' : field === 'last_name' ? 'Nom' : field === 'email' ? 'Email' : 'Mot de passe'}
+                </label>
+                <input
+                  id={field}
+                  name={field}
+                  type={field === 'password' ? 'password' : 'text'}
+                  required
+                  value={formState[field]}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 border-2 border-purple-300 hover:border-purple-400 focus:border-purple-500 rounded-xl bg-white focus:outline-none transition"
+                  placeholder={field === 'password' ? '' : ''}
+                />
+              </motion.div>
+            ))}
 
-          <div>
-            <label htmlFor="last_name" className="block text-sm font-medium text-gray-700">
-              Nom
-            </label>
-            <input
-              id="last_name"
-              name="last_name"
-              type="text"
-              required
-              value={formState.last_name}
-              onChange={handleChange}
-              className="mt-1 w-full px-4 py-2 border rounded"
-            />
-          </div>
+            <motion.button
+              type="submit"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              disabled={isSubmitting}
+              className="w-full py-3 mt-3 bg-purple-600 text-white font-semibold rounded-xl shadow hover:bg-purple-700 transition disabled:opacity-50"
+            >
+              {isSubmitting ? 'En cours...' : 'Créer mon compte'}
+            </motion.button>
+          </form>
 
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-              Email
-            </label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              required
-              value={formState.email}
-              onChange={handleChange}
-              className="mt-1 w-full px-4 py-2 border rounded"
-            />
-          </div>
-
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-              Mot de passe
-            </label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              required
-              value={formState.password}
-              onChange={handleChange}
-              className="mt-1 w-full px-4 py-2 border rounded"
-            />
-          </div>
-
-          <button
-            type="submit"
-            className="w-full bg-gray-800 text-white py-2 rounded hover:bg-gray-700 transition"
-          >
-            {isSubmitting ? "En cours..." : "Créer mon compte"}
-          </button>
-        </form>
+          <p className="text-center text-gray-600">
+            <Link href="/login">
+              <p className="text-purple-600 hover:underline">J&apos;ai déjà un compte</p>
+            </Link>
+          </p>
+        </motion.div>
       </div>
     </Layout>
   );

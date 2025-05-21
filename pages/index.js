@@ -41,6 +41,12 @@ export default function HomePage() {
     supabase.from('programs').select('*').then(({ data }) => { setPrograms(data || []); setLoading(false); });
   }, [authLoading, user]);
 
+  useEffect(() => {
+    if (selectedService) {
+      setActiveTab(selectedService);
+    }
+  }, [selectedService]);
+
   if (authLoading || loading) {
     return <Layout><div className="flex items-center justify-center h-screen w-screen"><Loader /></div></Layout>;
   }
@@ -93,8 +99,11 @@ export default function HomePage() {
                     key={s.id}
                     className="relative bg-gray-100 rounded-2xl p-6 hover:bg-white hover:shadow-lg transition"
                     whileHover={{ y: -4 }}
-                    onClick={() => setSelectedService(s.id)}
-                  >
+                    onClick={() => {
+                         setSelectedService(s.id);
+                         setActiveTab(s.id);
+                       }}
+                    >
                     {s.icone}
                     <h3 className="text-xl font-semibold text-gray-800 mb-2">{s.title}</h3>
                     <p className="text-gray-600">Clique pour découvrir</p>
@@ -122,7 +131,7 @@ export default function HomePage() {
           <div className="h-2 bg-gradient-to-r from-fuchsia-600 to-violet-600" />
 
           {/* Footer */}
-          <footer id="contact" className="bg-white py-8 shadow-inner">
+          <footer id="contact" className="bg-white py-8 shadow-inner mb-8 md:mb-0">
             <div className="max-w-7xl mx-auto px-6 text-center">
               <p className="text-gray-600 mb-4">Tous droits réservés.</p>
               <p className="text-gray-600 mb-4">@TheSmartWay</p>
@@ -152,7 +161,7 @@ export default function HomePage() {
                 {activeTab==='plans' && (
                   <div className="grid grid-cols-2 grid-rows-2 gap-6 h-full">
                     {planDetails.map(plan => (
-                      <div key={plan.name} className="bg-white/20 p-6 rounded-2xl flex flex-col justify-between shadow-md">
+                      <div key={plan.name} className="bg-white/20 p-6 rounded-2xl flex flex-col justify-between shadow-md hover:bg-white/30">
                         <div><h3 className="text-xl font-bold">{plan.name}</h3><p className="text-lg font-semibold mt-1">{plan.price}</p></div>
                         <div className="mt-2 text-sm"><p>{plan.concept1}</p><p>{plan.concept2}</p></div>
                         <button className="mt-4 py-2 bg-white/30 rounded-full text-white font-medium hover:bg-white/50">Choisir</button>

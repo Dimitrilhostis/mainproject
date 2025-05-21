@@ -12,9 +12,9 @@ import MobileNav from "@/components/mobile_nav";
 export default function Timer() {
   const [mode, setMode] = useState("chronometer");
   const [time, setTime] = useState(0);
-  const [hours, setHours] = useState(0); 
-  const [minutes, setMinutes] = useState(0); 
-  const [seconds, setSeconds] = useState(0); 
+  const [hours, setHours] = useState(0);
+  const [minutes, setMinutes] = useState(0);
+  const [seconds, setSeconds] = useState(0);
   const [timerDuration, setTimerDuration] = useState(0);
   const [running, setRunning] = useState(false);
   const [repetitions, setRepetitions] = useState(1);
@@ -82,95 +82,110 @@ export default function Timer() {
   }, [timerDuration, repetitions, mode]);
 
   return (
-    <div className="min-h-screen flex bg-gray-50 flex-col md:flex-row">
-        <aside className="hidden md:flex">
-          <SideBar />
-        </aside>
-        <div className="flex-1 flex items-center justify-center p-8">
-        <CustomCard className="w-full max-w-md p-6 bg-gray-200 shadow-xl rounded-2xl">
-            <div className="flex justify-center gap-4 mb-6">
-            <Button onClick={() => setMode("chronometer")} variant={mode === "chronometer" ? "default" : "outline"} className={`w-1/2 py-3 text-lg ${ mode === "chronometer" ? "bg-gray-500 text-white hover:bg-gray-600" : "bg-gray-300 text-gray-800 hover:bg-gray-400"}`}>
-                Chrono
+    <div className="min-h-screen flex bg-gradient-to-br from-purple-100 via-purple-50 to-white flex-col md:flex-row">
+      <aside className="hidden md:flex">
+        <SideBar />
+      </aside>
+      <div className="flex-1 flex items-center justify-center p-8">
+        <CustomCard className="w-full max-w-md p-6 bg-white shadow-lg rounded-2xl ring-2 ring-purple-200">
+          <div className="flex justify-center gap-4 mb-6">
+            <Button
+              onClick={() => setMode("chronometer")}
+              variant={mode === "chronometer" ? "default" : "outline"}
+              className={`w-1/2 py-3 text-lg transition ${
+                mode === "chronometer"
+                  ? "bg-purple-600 text-white hover:bg-purple-700"
+                  : "bg-purple-100 text-purple-800 hover:bg-purple-200"
+              }`}
+            >
+              Chrono
             </Button>
-            <Button onClick={() => setMode("timer")} variant={mode === "timer" ? "default" : "outline"} className={`w-1/2 py-3 text-lg ${ mode === "timer" ? "bg-gray-500 text-white hover:bg-gray-600" : "bg-gray-300 text-gray-800 hover:bg-gray-400"}`}>
-                Minuteur
+            <Button
+              onClick={() => setMode("timer")}
+              variant={mode === "timer" ? "default" : "outline"}
+              className={`w-1/2 py-3 text-lg transition ${
+                mode === "timer"
+                  ? "bg-purple-600 text-white hover:bg-purple-700"
+                  : "bg-purple-100 text-purple-800 hover:bg-purple-200"
+              }`}
+            >
+              Minuteur
             </Button>
-            </div>
+          </div>
 
-            {mode === "timer" && (
+          {mode === "timer" && (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mb-6">
-                {/* Champ Temps */}
-                <div className="flex flex-col">
-                <label className="text-sm mb-2 text-gray-500">Heures</label>
-                <input
+              {/** Inputs stylés en violet */}
+              {[
+                { label: "Heures", value: hours, setter: setHours },
+                { label: "Minutes", value: minutes, setter: setMinutes },
+                { label: "Secondes", value: seconds, setter: setSeconds },
+                { label: "Répétitions", value: repetitions, setter: setRepetitions },
+              ].map(({ label, value, setter }) => (
+                <div key={label} className="flex flex-col">
+                  <label className="text-sm mb-2 text-purple-600">{label}</label>
+                  <input
                     type="number"
-                    value={hours}
-                    onChange={(e) => setHours(Math.max(0, parseInt(e.target.value) || 0))}
-                    className="w-full p-3 text-gray-500 bg-gray-100 rounded-lg shadow-md"
+                    value={value}
+                    onChange={(e) =>
+                      setter(Math.max(0, parseInt(e.target.value) || 0))
+                    }
+                    className="w-full p-3 text-purple-800 bg-purple-50 rounded-lg shadow-inner focus:ring-2 focus:ring-purple-300"
                     onFocus={(e) => e.target.select()}
-                    placeholder="Heures"
-                />
+                    placeholder={label}
+                  />
                 </div>
-
-                <div className="flex flex-col">
-                <label className="text-sm mb-2 text-gray-500">Minutes</label>
-                <input
-                    type="number"
-                    value={minutes}
-                    onChange={(e) => setMinutes(Math.max(0, parseInt(e.target.value) || 0))}
-                    className="w-full p-3 text-gray-500 bg-gray-100 rounded-lg shadow-md"
-                    onFocus={(e) => e.target.select()}
-                    placeholder="Minutes"
-                />
-                </div>
-
-                <div className="flex flex-col">
-                <label className="text-sm mb-2 text-gray-500">Secondes</label>
-                <input
-                    type="number"
-                    value={seconds}
-                    onChange={(e) => setSeconds(Math.max(0, parseInt(e.target.value) || 0))}
-                    className="w-full p-3 text-gray-500 bg-gray-100 rounded-lg shadow-md"
-                    onFocus={(e) => e.target.select()}
-                    placeholder="Secondes"
-                />
-                </div>
-
-                <div className="flex flex-col mb-6">
-                <label className="text-sm mb-2 text-gray-600">Répétitions</label>
-                <input
-                    type="number"
-                    value={repetitions}
-                    onChange={(e) => setRepetitions(Math.max(1, parseInt(e.target.value) || 1))}
-                    className="w-full p-3 text-gray-600 bg-gray-200 rounded-lg shadow-md"
-                    onFocus={(e) => e.target.select()}
-                    placeholder="Répétitions"
-                />
-                </div>
+              ))}
             </div>
+          )}
 
-            )}
-
-            
-
-            {/* Affichage du timer */}
-            <motion.div className="text-6xl font-bold mb-6 text-center text-gray-500" animate={{ scale: running ? 1.1 : 1 }}>
-            {mode === "timer" ? new Date(time * 1000).toISOString().substr(11, 8) : new Date(time * 1000).toISOString().substr(11, 8)}
-            </motion.div>
-
-            {mode === "timer" && <div className="text-center mb-4 text-lg">Répétition {currentRep} / {repetitions}</div>}
-
-            <div className="flex justify-center gap-6 mb-6">
-            <Button onClick={toggleStartStop} variant={running ? "destructive" : "default"} className="w-1/2 py-3 text-xl bg-gray-400 hover:bg-gray-500">{running ? "Arrêter" : "Démarrer"}</Button>
-            {!running && <Button onClick={reset} variant="outline" className="w-1/2 py-3 text-xl bg-gray-300 hover:bg-gray-400">Réinitialiser</Button>}
+          {/* Display */}
+          <motion.div
+            className="text-6xl font-bold mb-6 text-center text-purple-700"
+            animate={{ scale: running ? 1.1 : 1 }}
+          >
+            {new Date(time * 1000).toISOString().substr(11, 8)}
+          </motion.div>
+          {mode === "timer" && (
+            <div className="text-center mb-4 text-lg text-purple-600">
+              Répétition {currentRep} / {repetitions}
             </div>
+          )}
 
-            {mode === "timer" && (
-            <SelectSound SelectSound={SelectSound} sounds={sounds} setSelectedSound={setSelectedSound}></SelectSound>
+          <div className="flex justify-center gap-6 mb-6">
+            <Button
+              onClick={toggleStartStop}
+              variant={running ? "destructive" : "default"}
+              className={`w-1/2 py-3 text-xl transition ${
+                running
+                  ? "bg-red-500 text-white hover:bg-red-600"
+                  : "bg-purple-500 text-white hover:bg-purple-600"
+              }`}
+            >
+              {running ? "Arrêter" : "Démarrer"}
+            </Button>
+            {!running && (
+              <Button
+                onClick={reset}
+                variant="outline"
+                className="w-1/2 py-3 text-xl text-purple-700 border-purple-300 hover:bg-purple-50"
+              >
+                Réinitialiser
+              </Button>
             )}
+          </div>
+
+          {mode === "timer" && (
+            <SelectSound
+              SelectSound={SelectSound}
+              sounds={sounds}
+              setSelectedSound={setSelectedSound}
+              className="mt-4 text-purple-800"
+            />
+          )}
         </CustomCard>
-        </div>
-        <MobileNav />
+      </div>
+      <MobileNav />
     </div>
   );
 }

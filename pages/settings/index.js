@@ -11,6 +11,7 @@ import { useAuth } from "@/contexts/auth_context";
 import { supabase } from "@/lib/supabaseClient";
 import { RiDeleteBinLine } from "react-icons/ri";
 import { IoPersonAddOutline } from "react-icons/io5";
+import ProfileSection from "@/components/settings/profile";
 
 
 export default function SettingsPage() {
@@ -37,8 +38,8 @@ export default function SettingsPage() {
 
   // Profil
   const [email, setEmail] = useState("");
-  const [msg, setMsg] = useState("");
-  const [err, setErr] = useState("");
+
+  const [password, setPassword] = useState("hidden")
 
   // Stats
   const [nutCount, setNutCount] = useState(0);
@@ -54,12 +55,6 @@ export default function SettingsPage() {
   // Relations
   const [friends, setFriends] = useState(["Alice", "Bob"]);
   const [newFriend, setNewFriend] = useState("");
-
-  // Sécurité
-  const [newPwd, setNewPwd] = useState("");
-  const [secMsg, setSecMsg] = useState("");
-  const [secErr, setSecErr] = useState("");
-  const [secLoading, setSecLoading] = useState(false);
 
   // load initial
   useEffect(() => {
@@ -79,15 +74,6 @@ export default function SettingsPage() {
     })();
   }, [authLoading, user]);
 
-  // handlers
-  const handleEmail = async (e) => {
-    e.preventDefault();
-    setErr(""); setMsg("");
-    const { error } = await supabase.auth.updateUser({ email });
-    if (error) setErr(error.message);
-    else setMsg("Email mis à jour !");
-  };
-
   const toggleNotif = (k) =>
     setNotif((n) => ({ ...n, [k]: !n[k] }));
 
@@ -101,16 +87,8 @@ export default function SettingsPage() {
   const removeFriend = (f) =>
     setFriends((list) => list.filter((x) => x !== f));
 
-  const handlePwd = async (e) => {
-    e.preventDefault();
-    setSecErr(""); setSecMsg(""); setSecLoading(true);
-    const { error } = await supabase.auth.updateUser({ password: newPwd });
-    setSecLoading(false);
-    if (error) setSecErr(error.message);
-    else setSecMsg("Mot de passe mis à jour !");
-  };
 
-  if (authLoading || loading) {
+  if (authLoading || loading || !user) {
     return (
       <Layout>
         <div className="flex-1 flex items-center justify-center">
@@ -191,78 +169,45 @@ export default function SettingsPage() {
             )}
 
             {active === "friends" && (
-              <section className="w-full flex-col columns-3 mt-10 gap-20">
-                <div className="p-10 rounded-2xl bg-gray-200 justify-center items-center">
-                  <h2 className="text-xl font-semibold mb-10">Mes Amis</h2>
-                  <ul className="space-y-2">
-                    {friends.map((f) => (
-                      <li
-                        key={f}
-                        className="flex justify-between items-center bg-white p-3 rounded shadow"
-                      >
-                        <span>{f}</span>
-                        <button
-                          onClick={() => removeFriend(f)}
-                          className="text-red-600 hover:text-red-400"
-                        >
-                          <RiDeleteBinLine className="text-xl"/>
-                        </button>
-                      </li>
-                      ))}
-                    </ul>
-                  </div>
-                  <div className="p-10 rounded-2xl bg-gray-200">
-                    <h2 className="text-xl font-semibold mb-10">Following</h2>
-                    <ul className="space-y-2">
+              <section className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mt-10">
+                {[
+                  { title: "Mes Amis", type: "friends" },
+                  { title: "Following", type: "following" },
+                  { title: "Followers", type: "followers" },
+                ].map(({ title, type }) => (
+                  <div key={type} className="p-5 rounded-2xl bg-gray-200 flex flex-col">
+                    <h2 className="text-xl font-semibold mb-4">{title}</h2>
+                    <ul className="space-y-2 overflow-auto flex-1">
                       {friends.map((f) => (
                         <li
                           key={f}
                           className="flex justify-between items-center bg-white p-3 rounded shadow"
                         >
                           <span>{f}</span>
-                          <button
-                            onClick={() => addFriend(f)}
-                            className="text-blue-600 hover:text-blue-400"
-                          >
-                            <IoPersonAddOutline className="text-xl"/>
-                          </button>
-                          <button
-                            onClick={() => removeFriend(f)}
-                            className="text-red-600 hover:text-red-400"
-                          >
-                            <RiDeleteBinLine className="text-xl"/>
-                          </button>
+                          <div className="flex gap-2">
+                            {(type === "following" || type === "followers") && (
+                              <button
+                                onClick={() => addFriend(f)}
+                                className="text-blue-600 hover:text-blue-400"
+                              >
+                                <IoPersonAddOutline className="text-xl" />
+                              </button>
+                            )}
+                            <button
+                              onClick={() => removeFriend(f)}
+                              className="text-red-600 hover:text-red-400"
+                            >
+                              <RiDeleteBinLine className="text-xl" />
+                            </button>
+                          </div>
                         </li>
                       ))}
                     </ul>
                   </div>
-                  <div className="p-10 rounded-2xl bg-gray-200">
-                    <h2 className="text-xl font-semibold mb-10">Followers</h2>
-                    <ul className="space-y-2">
-                      {friends.map((f) => (
-                        <li
-                          key={f}
-                          className="flex justify-between items-center bg-white dark:bg-gray-800 p-3 rounded shadow"
-                        >
-                          <span>{f}</span>
-                          <button
-                            onClick={() => addFriend(f)}
-                            className="text-blue-600 hover:text-blue-400"
-                          >
-                            <IoPersonAddOutline className="text-xl"/>
-                          </button>
-                          <button
-                            onClick={() => removeFriend(f)}
-                            className="text-red-600 hover:text-red-400"
-                          >
-                            <RiDeleteBinLine className="text-xl"/>
-                          </button>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
+                ))}
               </section>
             )}
+
 
             {active === "security" && (
               <section className="max-w-md mx-auto bg-white p-6 rounded-lg shadow space-y-4">
@@ -270,14 +215,13 @@ export default function SettingsPage() {
             )}
 
             {active === "account" && (
-              <section className="max-w-md mx-auto space-y-4">
-                <button
-                  onClick={() => signOut()}
-                  className="w-full py-2 flex items-center justify-center gap-2 bg-red-100 border-2 text-red-600 border-red-600 rounded hover:bg-red-600 hover:text-red-100 transition"
-                >
-                  Déconnexion
-                </button>
-              </section>
+              <ProfileSection 
+              user={user}
+              signOut={signOut}
+              friends={friends}
+              addFriend={addFriend}
+              removeFriend={removeFriend}
+            />
             )}
           </div>
         </div>
