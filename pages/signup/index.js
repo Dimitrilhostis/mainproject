@@ -1,4 +1,3 @@
-// pages/signup.jsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -6,18 +5,19 @@ import { useRouter } from "next/router";
 import Layout from "@/components/layout";
 import { motion } from "framer-motion";
 import Link from "next/link";
+import Loader from "@/components/loader";
 import useAuth from "@/hooks/use_auth";
 
 export default function SignUpPage() {
   const router = useRouter();
-  const { user, signUp } = useAuth();
+  const { user, signUp, loading: authLoading } = useAuth();
   const [formState, setFormState] = useState({ name: "", last_name: "", email: "", password: "" });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
   useEffect(() => {
-    if (user) router.replace("/discover");
-  }, [user, router]);
+    if (!authLoading && user) router.replace("/discover");
+  }, [user, authLoading, router]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -29,11 +29,22 @@ export default function SignUpPage() {
     setErrorMsg("");
     setIsSubmitting(true);
     const { name, last_name, email, password } = formState;
-    const { error } = await signUp({ name, last_name, email, password });
+    // appel correct: email et password en paramètres, metadata séparée
+    const { error } = await signUp(email, password, { data: { name, last_name } });
     setIsSubmitting(false);
     if (error) setErrorMsg(error.message || "Erreur lors de la création");
     else router.push("/login");
   };
+
+  if (authLoading || (isSubmitting && !user)) {
+    return (
+      <Layout>
+        <div className="flex-1 flex items-center justify-center h-screen">
+          <Loader />
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout>
@@ -47,7 +58,7 @@ export default function SignUpPage() {
           <h1 className="text-4xl font-extrabold text-center text-purple-700">
             Créer un compte
           </h1>
-          {errorMsg && <p className="text-center text-red-600">{errorMsg}</p>}
+          {errorMsg && <p className="text-center text-red-600 animate-shake">{errorMsg}</p>}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             {['name','last_name','email','password'].map((field, idx) => (
@@ -62,7 +73,13 @@ export default function SignUpPage() {
                   htmlFor={field}
                   className="absolute -top-3 left-4 bg-white/70 rounded-md px-1 text-sm text-purple-600"
                 >
-                  {field === 'name' ? 'Prénom' : field === 'last_name' ? 'Nom' : field === 'email' ? 'Email' : 'Mot de passe'}
+                  {field === 'name'
+                    ? 'Prénom'
+                    : field === 'last_name'
+                    ? 'Nom'
+                    : field === 'email'
+                    ? 'Email'
+                    : 'Mot de passe'}
                 </label>
                 <input
                   id={field}
@@ -72,7 +89,6 @@ export default function SignUpPage() {
                   value={formState[field]}
                   onChange={handleChange}
                   className="w-full px-4 py-3 border-2 border-purple-300 hover:border-purple-400 focus:border-purple-500 rounded-xl bg-white focus:outline-none transition"
-                  placeholder={field === 'password' ? '' : ''}
                 />
               </motion.div>
             ))}
@@ -90,7 +106,7 @@ export default function SignUpPage() {
 
           <p className="text-center text-gray-600">
             <Link href="/login">
-              <p className="text-purple-600 hover:underline">J&apos;ai déjà un compte</p>
+              <p className="text-purple-600 hover:underline">-&gt; J&apos;ai déjà un compte</p>
             </Link>
           </p>
         </motion.div>

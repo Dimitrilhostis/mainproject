@@ -4,13 +4,14 @@ import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/router";
 import { supabase } from "@/lib/supabaseClient";
 import Layout from "@/components/layout";
-import SideBar from "@/components/sidebar";
-import MobileNav from "@/components/mobile_nav";
+import SideBar from "@/components/nav/sidebar";
+import MobileNav from "@/components/nav/mobile_nav";
 import Loader from "@/components/loader";
 import { useAuth } from "@/contexts/auth_context";
 import { motion, AnimatePresence } from "framer-motion";
 import { FaFilter, FaTimes } from "react-icons/fa";
 import ProgramCard from "@/components/cards/card_program";
+import DiscoverNav from "@/components/nav/discover_nav";
 
 // Framer Motion variants
 const fadeVariants = {
@@ -97,13 +98,11 @@ export default function DiscoverPage() {
   return (
     <Layout>
       <div className="flex h-screen w-screen overflow-hidden">
-        <aside className="hidden md:flex">
           <SideBar />
-        </aside>
 
         <main className="flex-1 flex flex-col h-screen overflow-hidden w-full">
-          <header className="flex-shrink-0 flex flex-col sm:flex-row items-center justify-between px-4 sm:px-6 py-3 bg-white shadow-sm">
-            <h1 className="text-2xl sm:text-3xl font-bold mb-2 sm:mb-0">Nos Programmes</h1>
+          <header className="flex-shrink-0 flex items-center justify-between px-4 py-2 bg-white shadow-sm">
+          <DiscoverNav />
             <div className="flex items-center space-x-2 w-full sm:w-auto">
               <input
                 type="text"

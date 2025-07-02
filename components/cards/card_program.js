@@ -59,26 +59,27 @@ ProgramCard.propTypes = {
 };
 
 /**
- * CardSpecial component with fixed dimensions and hover scale effect
+ * CardSpecial: carte spéciale
  */
-export function CardSpecial({ title, content, category }) {
+export function CardSpecial({ title, content, extra, category }) {
   return (
-    <div className="w-80 h-92 rounded-lg shadow-xl bg-white flex flex-col transform transition-transform duration-200 hover:scale-105">
+    <div className="w-80 rounded-lg shadow-xl bg-white flex flex-col transform transition-transform duration-200 hover:scale-105">
       <div className="p-6 flex-grow">
-        <h2 className="text-xl font-bold text-gray-800 mb-8 truncate m-5">{title}</h2>
-        <p className="text-gray-700 text-base mb-4 overflow-auto">{content}</p>
+        <h2 className="text-xl font-bold text-gray-800 mb-4 truncate">{title}</h2>
+        <p className="text-gray-700 text-base overflow-auto">{content}</p>
       </div>
-      {category && (
+      {extra && (
         <div className="px-6 py-2 bg-gray-100">
-          <span className="text-xs uppercase font-bold text-gray-700">{category}</span>
+          <span className="text-xs uppercase font-bold text-gray-700">{extra}</span>
         </div>
       )}
     </div>
   );
 }
+
 CardSpecial.propTypes = {
   title: PropTypes.string.isRequired,
   content: PropTypes.string.isRequired,
-  extra: PropTypes.string.isRequired,
-  category: PropTypes.string,
+  extra: PropTypes.string,
+  category: PropTypes.string
 };

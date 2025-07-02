@@ -3,16 +3,15 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Layout from '@/components/layout';
-import SideBar from '@/components/sidebar';
+import SideBar from '@/components/nav/sidebar';
 import ProgramCard from '@/components/cards/card_program';
-import { CardSpecial } from '@/components/cards/card_program';
 import { supabase } from '../lib/supabaseClient';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '@/contexts/auth_context';
 import Loader from '@/components/loader';
-import MobileNav from '@/components/mobile_nav';
+import MobileNav from '@/components/nav/mobile_nav';
 import { IoClose } from 'react-icons/io5';
-import { FaMoneyBillAlt, FaFacebook, FaTwitter, FaInstagram } from 'react-icons/fa';
+import { FaMoneyBillAlt } from 'react-icons/fa';
 import { GiBiceps } from "react-icons/gi";
 import { MdFoodBank, MdCoPresent } from "react-icons/md";
 
@@ -97,7 +96,7 @@ export default function HomePage() {
                 {services.map(s => (
                   <motion.div
                     key={s.id}
-                    className="relative bg-gray-100 rounded-2xl p-6 hover:bg-white hover:shadow-lg transition"
+                    className="relative bg-gray-100 rounded-2xl p-6 hover:bg-white hover:shadow-lg hover:cursor-help transition"
                     whileHover={{ y: -4 }}
                     onClick={() => {
                          setSelectedService(s.id);

@@ -4,7 +4,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import Layout from "@/components/layout";
-import SideBar from "@/components/sidebar";
+import SideBar from "@/components/nav/sidebar";
 import Loader from "@/components/loader";
 import { supabase } from "@/lib/supabaseClient";
 import { useAuth } from "@/contexts/auth_context";

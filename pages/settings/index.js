@@ -4,9 +4,9 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import Layout from "@/components/layout";
-import SideBar from "@/components/sidebar";
+import SideBar from "@/components/nav/sidebar";
 import Loader from "@/components/loader";
-import MobileNav from "@/components/mobile_nav";
+import MobileNav from "@/components/nav/mobile_nav";
 import { useAuth } from "@/contexts/auth_context";
 import { supabase } from "@/lib/supabaseClient";
 import { RiDeleteBinLine } from "react-icons/ri";
