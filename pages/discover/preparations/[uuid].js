@@ -1,23 +1,30 @@
-// pages/preparations/[uuid].jsx
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter }    from "next/router";
+import { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/router";
 import Layout from "@/components/layout";
 import MobileNav from "@/components/nav/mobile_nav";
 import Loader from "@/components/loader";
-import Image            from "next/image";
-import { supabase }     from "@/lib/supabaseClient";
+import { supabase } from "@/lib/supabaseClient";
 import Link from "next/link";
 import BackButton from "@/components/buttons/back_button";
-import VideoZone from "@/components/video_zone";
+
+// Fonction utilitaire pour splitter les chaînes multi-lignes ou tableaux
+function splitToList(str) {
+  if (!str) return [];
+  if (Array.isArray(str)) return str;
+  return str.split('\n').map(s => s.trim()).filter(Boolean);
+}
 
 export default function PreparationPage() {
-  const router       = useRouter();
-  const { uuid }     = router.query;        
+  const router = useRouter();
+  const { uuid } = router.query;
   const [preparation, setPreparation] = useState(null);
-  const [muscles,   setMuscles]   = useState([]);     // A mettre partout
-  const [loading,   setLoading]   = useState(true);
+  const [ingredients, setIngredients] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Marge à appliquer pour espacer bandeau/blocs du bas
+  const BANNER_MARGIN = 56; // px
 
   useEffect(() => {
     if (!router.isReady) return;
@@ -27,7 +34,7 @@ export default function PreparationPage() {
         .from("preparations")
         .select("*")
         .eq("uuid", uuid)
-        .maybeSingle();                
+        .maybeSingle();
       if (errEx) {
         console.error("Fetch preparation error", errEx);
         setLoading(false);
@@ -40,21 +47,27 @@ export default function PreparationPage() {
       }
       setPreparation(ex);
 
-      // 2. Si l'exercice a un tableau muscles_uuid, on fetch les muscles liés
-      if (Array.isArray(ex.muscle_uuid) && ex.muscle_uuid.length > 0) {
-        const { data: ms, error: errMs } = await supabase
-          .from("muscles")
-          .select("uuid,name,image_url")
-          .in("uuid", ex.muscle_uuid);
-        if (errMs) console.error("Fetch muscles error", errMs);
-        else setMuscles(ms || []);
+      // Gère string ou tableau pour les ingrédients
+      let ingrUuids = [];
+      if (Array.isArray(ex.ingredient_uuid)) {
+        ingrUuids = ex.ingredient_uuid;
+      } else if (typeof ex.ingredient_uuid === "string" && ex.ingredient_uuid.length > 0) {
+        ingrUuids = [ex.ingredient_uuid];
       }
-
+      if (ingrUuids.length > 0) {
+        const { data: ing, error: errIng } = await supabase
+          .from("ingredients")
+          .select("uuid,name")
+          .in("uuid", ingrUuids);
+        if (errIng) console.error("Fetch ingredients error", errIng);
+        else setIngredients(ing || []);
+      } else {
+        setIngredients([]);
+      }
       setLoading(false);
     })();
   }, [router.isReady, uuid]);
 
-  // UI
   if (loading) {
     return (
       <Layout>
@@ -68,7 +81,7 @@ export default function PreparationPage() {
   if (!preparation) {
     return (
       <Layout>
-        <BackButton/>
+        <BackButton />
         <div className="p-8 text-center">Préparation non trouvée.</div>
       </Layout>
     );
@@ -76,130 +89,130 @@ export default function PreparationPage() {
 
   return (
     <Layout>
-      <div className="flex w-screen h-screen"> 
-
-        {/* Contenu principal */}
-        <main className="flex-1 overflow-auto">
-
-        <div className="bg-violet-200 shadow-md text-center py-4">
-            <h1 className="text-4xl uppercase font-bold">
-                {preparation.name}
+      <div className="w-full min-h-screen bg-violet-100 flex flex-col items-center">
+        {/* Bandeau Titre + Infos */}
+        <div
+          className="mx-auto w-full max-w-7xl flex flex-col md:flex-row items-center p-8 bg-violet-200 shadow rounded-3xl"
+          style={{ marginTop: BANNER_MARGIN, marginBottom: BANNER_MARGIN }}
+        >
+          <div className="flex-1 flex ml-12">
+            <h1 className="text-2xl md:text-4xl font-semibold uppercase tracking-tight text-gray-900 text-center">
+              {preparation.name}
             </h1>
-        </div>
-
-        <BackButton className={"mt-8"}/>    
-
-          {/* Hero image + vidéo côte-à-côte */}
-          <div className="my-4 flex gap-6">
-            {/* Image */}
-            <div className="relative ml-40 h-80 w-80 bg-gray-200 rounded-lg overflow-hidden">
-              {preparation.image_url && (
-                <Image
-                  src={preparation.image_url}
-                  alt={preparation.name}
-                  fill
-                  className="object-cover"
-                />
-              )}
-            </div>
-
-            <VideoZone 
-              src={preparation.video_url} 
-              poster={preparation.cover_video} 
-              height="w-160"
-              width="h-80"
-            />    
           </div>
-
-          {/* Meta */}
-          <div className="pl-20 p-6 flex flex-wrap gap-20 bg-white border-b">
+          <div className="flex flex-row items-center gap-12 text-gray-800 text-xl font-light min-w-[200px] text-center">
             {preparation.time != null && (
-              <div><strong>Durée :</strong> {preparation.time} min</div>
+              <div>Durée : {preparation.time} min</div>
             )}
             {preparation.difficulty != null && (
-              <div><strong>Difficulté :</strong> {preparation.difficulty}/5</div>
+              <div>Difficulté : {preparation.difficulty}/5</div>
             )}
             {preparation.created_at && (
-              <div>
-                <strong>Créé le :</strong>{" "}
-                {new Date(preparation.created_at).toLocaleDateString()}
-              </div>
+              <div>Créé le : {new Date(preparation.created_at).toLocaleDateString()}</div>
             )}
           </div>
+        </div>
 
-          {/* Contenu détaillé */}
-          <div className="p-6 space-y-8 grid grid-rows-2 grid-cols-3 gap-5">
-            {/* Preparation */}
-            {preparation.ingredient_uuid && (
-              <section className="bg-white border-violet-200 border-2 p-3 rounded-xl">
-                <h2 className="text-xl font-semibold mb-2">Ingredients</h2>
-                <p className="text-gray-700">{preparation.ingredient_uuid}</p>
-              </section>
-            )}
+        <BackButton className="ml-4 mb-4" />
 
-            {/* Preparation */}
-            {preparation.preparation && (
-              <section className="bg-white border-violet-200 border-2 p-3 rounded-xl">
-                <h2 className="text-xl font-semibold mb-2">Preparation</h2>
-                <p className="text-gray-700">{preparation.preparation}</p>
-              </section>
-            )}
-
-            {/* Tips */}
-            {preparation.tips && (
-              <section className="bg-white border-violet-200 border-2 p-3 rounded-xl">
-                <h2 className="text-xl font-semibold mb-2">Tips</h2>
-                <p className="text-gray-700">{preparation.tips}</p>
-              </section>
-            )}
-
-            {/* Association */}
-            {preparation.association && (
-              <section className="bg-white border-violet-200 border-2 p-3 rounded-xl">
-                <h2 className="text-xl font-semibold mb-2">Association</h2>
-                <p className="text-gray-700">{preparation.association}</p>
-              </section>
-            )}
-
-            {/* Variantes */}
-            {preparation.variantes && (
-              <section className="bg-white border-violet-200 border-2 p-3 rounded-xl">
-                <h2 className="text-xl font-semibold mb-2">Variantes</h2>
-                <p className="text-gray-700">{preparation.variantes}</p>
-              </section>
-            )}
-
-            {/* Muscles */}
-            {muscles.length > 0 && (
-              <section className="col-span-3">
-                <h2 className="text-xl font-semibold mb-4">Muscles sollicités</h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {muscles.map((m) => (
-                    <Link
-                      key={m.uuid}
-                      href={`/admin/muscles/${m.uuid}`}
-                      className="bg-white w-32 rounded-lg shadow hover:shadow-md transition overflow-hidden hover:scale-105 duration-200"
-                    >
-                      <div className="relative h-32 w-full">
-                        <Image
-                          src={m.image_url}
-                          alt={m.name}
-                          fill
-                          className="object-cover"
-                        />
-                      </div>
-                      <div className="p-4">
-                        <h3 className="font-semibold">{m.name}</h3>
-                      </div>
-                    </Link>
+        {/* Bloc principal : 2 colonnes 50/50 */}
+        <div className="max-w-7xl w-full flex flex-row gap-12 px-8" style={{ minHeight: '60vh' }}>
+          {/* Gauche : Vidéo + Ingrédients, sticky sur la hauteur de la préparation */}
+          <div className="w-1/2 flex flex-col sticky top-28 self-start" style={{ maxHeight: '80vh' }}>
+            {/* Vidéo */}
+            <div className="w-full aspect-video rounded-2xl overflow-hidden shadow-2xl bg-black mb-6">
+              <video src={preparation.video_url} poster={preparation.image_url} controls className="w-full h-auto rounded-2xl"/>
+            </div>
+            {/* Ingrédients */}
+            <section className="bg-white border-violet-200 border-2 p-6 rounded-2xl shadow-lg flex-1 overflow-auto">
+              <h2 className="text-2xl font-bold mb-4">Ingrédients</h2>
+              {ingredients.length > 0 ? (
+                <ul className="list-disc ml-6 text-lg">
+                  {ingredients.map((ing) => (
+                    <li key={ing.uuid}>
+                      <Link
+                        href={`/discover/preparations/ingredients/${ing.uuid}`}
+                        className="hover:text-purple-600 transition"
+                      >
+                        {ing.name}
+                      </Link>
+                    </li>
                   ))}
-                </div>
-              </section>
-            )}
+                </ul>
+              ) : (
+                <p className="text-gray-500">Aucun ingrédient lié.</p>
+              )}
+            </section>
           </div>
-        </main>
+          {/* Droite : Préparation (scrollable) */}
+          <div className="w-1/2 min-w-[350px] flex flex-col">
+            <section className="bg-white border-violet-200 border-2 p-6 rounded-2xl shadow-lg flex-1">
+              <h2 className="text-2xl font-bold mb-4">Préparation</h2>
+              {splitToList(preparation.preparation).length > 0 ? (
+                <ol className="list-decimal ml-6 text-lg space-y-1">
+                  {splitToList(preparation.preparation).map((step, i) => (
+                    <li key={i}>{step}</li>
+                  ))}
+                </ol>
+              ) : (
+                <p className="text-gray-500">Aucune étape.</p>
+              )}
+            </section>
+          </div>
+        </div>
 
-        {/* Mobile nav */}
+        {/* Blocs bas (Tips, Association, Variantes) avec même margin que le bandeau */}
+        <div
+          className="max-w-7xl w-full grid grid-cols-1 md:grid-cols-3 gap-8 px-8"
+          style={{ marginTop: BANNER_MARGIN, marginBottom: BANNER_MARGIN }}
+        >
+          {/* Tips */}
+          {preparation.tips && (
+            <section className="bg-white border-violet-200 border-2 p-6 rounded-2xl shadow">
+              <h2 className="text-xl font-semibold mb-2">Tips</h2>
+              {splitToList(preparation.tips).length > 0 ? (
+                <ul className="list-disc ml-5 text-lg space-y-1">
+                  {splitToList(preparation.tips).map((tip, i) => (
+                    <li key={i}>{tip}</li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-gray-500">Aucun tips.</p>
+              )}
+            </section>
+          )}
+          {/* Association */}
+          {preparation.association && (
+            <section className="bg-white border-violet-200 border-2 p-6 rounded-2xl shadow">
+              <h2 className="text-xl font-semibold mb-2">Association</h2>
+              {splitToList(preparation.association).length > 0 ? (
+                <ul className="list-disc ml-5 text-lg space-y-1">
+                  {splitToList(preparation.association).map((item, i) => (
+                    <li key={i}>{item}</li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-gray-500">Aucune association.</p>
+              )}
+            </section>
+          )}
+          {/* Variantes */}
+          {preparation.variantes && (
+            <section className="bg-white border-violet-200 border-2 p-6 rounded-2xl shadow">
+              <h2 className="text-xl font-semibold mb-2">Variantes</h2>
+              {splitToList(preparation.variantes).length > 0 ? (
+                <ul className="list-disc ml-5 text-lg space-y-1">
+                  {splitToList(preparation.variantes).map((item, i) => (
+                    <li key={i}>{item}</li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-gray-500">Aucune variante.</p>
+              )}
+            </section>
+          )}
+        </div>
+
         <MobileNav />
       </div>
     </Layout>

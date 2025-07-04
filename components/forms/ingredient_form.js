@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabaseClient';
 
 export default function IngredientForm({ toEdit, onSaved }) {
-  const [form, setForm] = useState({ name: '', image_url: '', icon_url: '', micronutrients: '', apports: '', associations: '', infos_sup: '' });
+  const [form, setForm] = useState({ name: '', image_url: '/images/', icon_url: '<  />', micronutrients: '', apports: '', associations: '', infos_sup: '' });
   const [loading, setLoading] = useState(false);
 
   useEffect(() => { if (toEdit) setForm(toEdit); }, [toEdit]);
@@ -13,7 +13,7 @@ export default function IngredientForm({ toEdit, onSaved }) {
     e.preventDefault(); setLoading(true);
     const payload = { ...form }; let res, error;
     if (toEdit) await supabase.from('ingredients').update(payload).eq('id', form.id);
-    else { payload.id = crypto.randomUUID(); ({ data: res, error } = await supabase.from('ingredients').insert([payload])); }
+    else { payload.uuid = crypto.randomUUID(); ({ data: res, error } = await supabase.from('ingredients').insert([payload])); }
     if (error) {console.error('❌ Supabase error:', error); alert('Erreur : ' + error.message); setLoading(false); return;}
     setLoading(false); onSaved();
   };

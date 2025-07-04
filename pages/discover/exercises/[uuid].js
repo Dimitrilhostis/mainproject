@@ -1,23 +1,30 @@
-// pages/exercises/[uuid].jsx
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter }    from "next/router";
+import { useRouter } from "next/router";
 import Layout from "@/components/layout";
 import MobileNav from "@/components/nav/mobile_nav";
 import Loader from "@/components/loader";
-import Image            from "next/image";
-import { supabase }     from "@/lib/supabaseClient";
+import Image from "next/image";
+import { supabase } from "@/lib/supabaseClient";
 import Link from "next/link";
 import BackButton from "@/components/buttons/back_button";
-import VideoZone from "@/components/video_zone";
+
+// Utilitaire pour splitter les textes multi-lignes ou tableaux
+function splitToList(str) {
+  if (!str) return [];
+  if (Array.isArray(str)) return str;
+  return str.split('\n').map(s => s.trim()).filter(Boolean);
+}
 
 export default function ExercisePage() {
-  const router       = useRouter();
-  const { uuid }     = router.query;        
+  const router = useRouter();
+  const { uuid } = router.query;
   const [exercise, setExercise] = useState(null);
-  const [muscles,   setMuscles]   = useState([]);     // A mettre partout
-  const [loading,   setLoading]   = useState(true);
+  const [muscles, setMuscles] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const BANNER_MARGIN = 56;
 
   useEffect(() => {
     if (!router.isReady) return;
@@ -27,7 +34,7 @@ export default function ExercisePage() {
         .from("exercises")
         .select("*")
         .eq("uuid", uuid)
-        .maybeSingle();                
+        .maybeSingle();
       if (errEx) {
         console.error("Fetch exercise error", errEx);
         setLoading(false);
@@ -40,7 +47,6 @@ export default function ExercisePage() {
       }
       setExercise(ex);
 
-      // 2. Si l'exercice a un tableau muscles_uuid, on fetch les muscles liés
       if (Array.isArray(ex.muscle_uuid) && ex.muscle_uuid.length > 0) {
         const { data: ms, error: errMs } = await supabase
           .from("muscles")
@@ -48,13 +54,14 @@ export default function ExercisePage() {
           .in("uuid", ex.muscle_uuid);
         if (errMs) console.error("Fetch muscles error", errMs);
         else setMuscles(ms || []);
+      } else {
+        setMuscles([]);
       }
 
       setLoading(false);
     })();
   }, [router.isReady, uuid]);
 
-  // UI
   if (loading) {
     return (
       <Layout>
@@ -68,7 +75,7 @@ export default function ExercisePage() {
   if (!exercise) {
     return (
       <Layout>
-        <BackButton/>
+        <BackButton />
         <div className="p-8 text-center">Exercice non trouvé.</div>
       </Layout>
     );
@@ -76,104 +83,62 @@ export default function ExercisePage() {
 
   return (
     <Layout>
-      <div className="flex w-screen h-screen"> 
+      <div className="w-full min-h-screen bg-violet-100 flex flex-col items-center">
 
-        {/* Contenu principal */}
-        <main className="flex-1 overflow-auto">
-
-        <div className="bg-violet-200 shadow-md text-center py-4">
-            <h1 className="text-4xl uppercase font-bold">
-                {exercise.name}
+        {/* Bandeau Titre + Infos */}
+        <div
+          className="mx-auto w-full max-w-7xl flex flex-col md:flex-row items-center p-8 bg-violet-200 shadow rounded-3xl"
+          style={{ marginTop: BANNER_MARGIN, marginBottom: BANNER_MARGIN }}
+        >
+          <div className="flex-1 flex ml-12">
+            <h1 className="text-2xl md:text-4xl font-semibold uppercase tracking-tight text-gray-900 text-center">
+              {exercise.name}
             </h1>
-        </div>
-
-        <BackButton className={"mt-8"}/>    
-
-          {/* Hero image + vidéo côte-à-côte */}
-          <div className="my-4 flex gap-6">
-            {/* Image */}
-            <div className="relative ml-40 h-80 w-80 bg-gray-200 rounded-lg overflow-hidden">
-              {exercise.image_url && (
-                <Image
-                  src={exercise.image_url}
-                  alt={exercise.name}
-                  fill
-                  className="object-cover"
-                />
-              )}
-            </div>
-
-            <VideoZone 
-              src={exercise.video_url} 
-              poster={exercise.cover_video} 
-              height="w-160"
-              width="h-80"
-            />    
           </div>
-
-          {/* Meta */}
-          <div className="p-6 flex flex-wrap gap-6 bg-white border-b">
+          <div className="flex flex-row items-center gap-12 text-gray-800 text-xl font-light min-w-[200px] text-center">
             {exercise.duration_min != null && (
-              <div><strong>Durée :</strong> {exercise.duration_min} min</div>
+              <div>Durée : {exercise.duration_min} min</div>
             )}
             {exercise.difficulty != null && (
-              <div><strong>Difficulté :</strong> {exercise.difficulty}/5</div>
+              <div>Difficulté : {exercise.difficulty}/5</div>
             )}
             {exercise.created_at && (
-              <div>
-                <strong>Créé le :</strong>{" "}
-                {new Date(exercise.created_at).toLocaleDateString()}
-              </div>
+              <div>Créé le : {new Date(exercise.created_at).toLocaleDateString()}</div>
             )}
           </div>
+        </div>
 
-          {/* Contenu détaillé */}
-          <div className="p-6 space-y-8 grid grid-rows-2 grid-cols-3">
-            {/* Mouvements */}
-            {exercise.mouvements && (
-              <section>
-                <h2 className="text-xl font-semibold mb-2">Mouvements</h2>
-                <p className="text-gray-700">{exercise.mouvements}</p>
-              </section>
-            )}
+        <BackButton className="ml-4 mb-4" />
 
-            {/* Tips */}
-            {exercise.tips && (
-              <section>
-                <h2 className="text-xl font-semibold mb-2">Conseils</h2>
-                <p className="text-gray-700">{exercise.tips}</p>
-              </section>
-            )}
-
-            {/* Variantes */}
-            {exercise.variantes && (
-              <section>
-                <h2 className="text-xl font-semibold mb-2">Variantes</h2>
-                <p className="text-gray-700">{exercise.variantes}</p>
-              </section>
-            )}
-
-            {/* Muscles */}
+        {/* Bloc principal à 2 colonnes 50/50 */}
+        <div className="max-w-7xl w-full flex flex-row gap-12 px-8" style={{ minHeight: '60vh' }}>
+          {/* Gauche : Vidéo + Muscles sticky */}
+          <div className="w-1/2 flex flex-col sticky top-28 self-start" style={{ maxHeight: '80vh' }}>
+            {/* Vidéo */}
+            <div className="w-full aspect-video rounded-2xl overflow-hidden shadow-2xl bg-black mb-6">
+              <video src={exercise.video_url} poster={exercise.cover_video || exercise.image_url} controls className="w-full h-auto rounded-2xl" />
+            </div>
+            {/* Muscles sollicités */}
             {muscles.length > 0 && (
-              <section className="col-span-3">
-                <h2 className="text-xl font-semibold mb-4">Muscles sollicités</h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              <section className="bg-white border-violet-200 border-2 p-6 rounded-2xl shadow-lg flex-1 overflow-auto">
+                <h2 className="text-2xl font-bold mb-4">Muscles sollicités</h2>
+                <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 gap-4">
                   {muscles.map((m) => (
                     <Link
                       key={m.uuid}
                       href={`/admin/muscles/${m.uuid}`}
-                      className="bg-white w-32 rounded-lg shadow hover:shadow-md transition overflow-hidden hover:scale-105 duration-200"
+                      className="bg-white rounded-lg shadow hover:shadow-md transition overflow-hidden hover:scale-105 duration-200 flex flex-col items-center"
                     >
-                      <div className="relative h-32 w-full">
+                      <div className="relative h-20 w-20 mb-2">
                         <Image
                           src={m.image_url}
                           alt={m.name}
                           fill
-                          className="object-cover"
+                          className="object-cover rounded"
                         />
                       </div>
-                      <div className="p-4">
-                        <h3 className="font-semibold">{m.name}</h3>
+                      <div className="p-1">
+                        <h3 className="font-semibold text-center">{m.name}</h3>
                       </div>
                     </Link>
                   ))}
@@ -181,9 +146,57 @@ export default function ExercisePage() {
               </section>
             )}
           </div>
-        </main>
+          {/* Droite : Mouvements, Conseils, Variantes (scrollable) */}
+          <div className="w-1/2 min-w-[350px] flex flex-col gap-8">
+            {/* Mouvements */}
+            <section className="bg-white border-violet-200 border-2 p-6 rounded-2xl shadow-lg">
+              <h2 className="text-2xl font-bold mb-4">Mouvements</h2>
+              {splitToList(exercise.mouvements).length > 0 ? (
+                <ol className="list-decimal ml-6 text-lg space-y-1">
+                  {splitToList(exercise.mouvements).map((mv, i) => (
+                    <li key={i}>{mv}</li>
+                  ))}
+                </ol>
+              ) : (
+                <p className="text-gray-500">Aucun mouvement renseigné.</p>
+              )}
+            </section>
+            {/* Conseils */}
+            {exercise.tips && (
+              <section className="bg-white border-violet-200 border-2 p-6 rounded-2xl shadow-lg">
+                <h2 className="text-xl font-semibold mb-2">Conseils</h2>
+                {splitToList(exercise.tips).length > 0 ? (
+                  <ul className="list-disc ml-5 text-lg space-y-1">
+                    {splitToList(exercise.tips).map((tip, i) => (
+                      <li key={i}>{tip}</li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-gray-500">Aucun conseil.</p>
+                )}
+              </section>
+            )}
+            {/* Variantes */}
+            {exercise.variantes && (
+              <section className="bg-white border-violet-200 border-2 p-6 rounded-2xl shadow-lg">
+                <h2 className="text-xl font-semibold mb-2">Variantes</h2>
+                {splitToList(exercise.variantes).length > 0 ? (
+                  <ul className="list-disc ml-5 text-lg space-y-1">
+                    {splitToList(exercise.variantes).map((item, i) => (
+                      <li key={i}>{item}</li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-gray-500">Aucune variante.</p>
+                )}
+              </section>
+            )}
+          </div>
+        </div>
 
-        {/* Mobile nav */}
+        {/* Marge bas équivalente au bandeau */}
+        <div style={{ marginBottom: BANNER_MARGIN }} />
+
         <MobileNav />
       </div>
     </Layout>
