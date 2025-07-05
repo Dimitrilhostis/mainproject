@@ -24,7 +24,7 @@ export default function DiscoverNav() {
   return (
     <nav className="w-full bg-white">
       {/* BARRE PRINCIPALE */}
-      <div className="flex items-center h-16 px-4 md:px-6 lg:px-8">
+      <div className="flex z-50 items-center h-16 px-4 md:px-6 lg:px-8">
         {/* ← BOUTON HAMBURGER (mobile) placé à gauche */}
         <div className="flex md:hidden">
           <button
@@ -63,7 +63,7 @@ export default function DiscoverNav() {
 
       {/* MENU MOBILE PLEIN ÉCRAN (visible si mobileOpen) */}
       {mobileOpen && (
-        <div className="fixed inset-0 bg-white">
+        <div className="fixed inset-0 z-50 bg-white">
           {/* Barre de fermeture */}
           <div className="flex items-center h-16 px-4">
             <button

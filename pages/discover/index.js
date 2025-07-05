@@ -18,6 +18,7 @@ const fadeVariants = {
   hidden: { opacity: 0, y: 20 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.5 } }
 };
+
 export default function DiscoverPage() {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
@@ -76,15 +77,6 @@ export default function DiscoverPage() {
     [programs, search, filterDifficulty, filterDuration, filterCertified]
   );
 
-  const rows = useMemo(() => {
-    const perRow = 4;
-    const result = [];
-    for (let i = 0; i < filtered.length; i += perRow) {
-      result.push(filtered.slice(i, i + perRow));
-    }
-    return result;
-  }, [filtered]);
-
   if (authLoading || loading) {
     return (
       <Layout>
@@ -98,18 +90,22 @@ export default function DiscoverPage() {
   return (
     <Layout>
       <div className="flex h-screen w-screen overflow-hidden">
+        {/* Sidebar desktop only */}
+        <div className="hidden lg:block">
           <SideBar />
+        </div>
 
         <main className="flex-1 flex flex-col h-screen overflow-hidden w-full">
-          <header className="flex-shrink-0 flex items-center justify-between px-4 py-2 bg-white shadow-sm">
-          <DiscoverNav />
-            <div className="flex items-center space-x-2 w-full sm:w-auto">
+          {/* HEADER BAR */}
+          <header className="flex-shrink-0 flex flex-col z-50 sm:flex-row items-center justify-between px-3 py-2 bg-white shadow-sm">
+            <DiscoverNav />
+            <div className="flex items-center space-x-2 w-full sm:w-auto mt-2 sm:mt-0">
               <input
                 type="text"
                 placeholder="Rechercher..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="flex-1 sm:flex-none px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 w-full sm:w-64"
+                className="flex-1 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 w-full sm:w-64"
               />
               <div className="relative">
                 <button
@@ -127,11 +123,20 @@ export default function DiscoverPage() {
             </div>
           </header>
 
+          {/* Programmes cards */}
           <div className="flex-1 overflow-y-auto">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6 p-4 sm:p-6">
+            <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 p-3 sm:p-6">
               <AnimatePresence>
-                {rows.flat().map((program) => (
-                  <ProgramCard key={program.uuid} program={program} />
+                {filtered.map((program) => (
+                  <motion.div
+                    key={program.uuid}
+                    variants={fadeVariants}
+                    initial="hidden"
+                    animate="visible"
+                    exit="hidden"
+                  >
+                    <ProgramCard program={program} />
+                  </motion.div>
                 ))}
               </AnimatePresence>
             </div>
@@ -140,8 +145,12 @@ export default function DiscoverPage() {
             </footer>
           </div>
 
-          <MobileNav />
+          {/* MobileNav sticky en bas */}
+          <div className="fixed left-0 right-0 bottom-0 z-40 lg:hidden">
+            <MobileNav />
+          </div>
 
+          {/* Drawer Filtres */}
           <AnimatePresence>
             {drawerOpen && (
               <motion.aside
@@ -151,7 +160,7 @@ export default function DiscoverPage() {
                 exit={{ opacity: 0 }}
               >
                 <div
-                  className="absolute inset-0"
+                  className="absolute inset-0 bg-black/30"
                   onClick={() => setDrawerOpen(false)}
                 />
                 <motion.div
@@ -170,7 +179,7 @@ export default function DiscoverPage() {
                       <FaTimes className="h-5 w-5 text-gray-600" />
                     </button>
                   </div>
-                  <div className="flex-1 overflow-y-auto px-6 py-4 space-y-6 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+                  <div className="flex-1 overflow-y-auto px-6 py-4 space-y-6">
                     <div>
                       <label className="block text-sm font-medium text-gray-500 uppercase mb-2">Difficulté</label>
                       <select
