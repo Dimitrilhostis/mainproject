@@ -4,7 +4,7 @@
 import { useRouter } from "next/router";
 import { motion } from "framer-motion";
 import { FaArrowLeft } from "react-icons/fa";
-import clsx from "clsx"; // ou 'classnames' / 'tailwind-merge'
+import clsx from "clsx";
 
 export default function BackButton({ className }) {
   const router = useRouter();
@@ -12,24 +12,34 @@ export default function BackButton({ className }) {
   return (
     <motion.button
       onClick={() => router.back()}
-      whileTap={{ scale: 0.95 }}
+      whileTap={{ scale: 0.92 }}
+      whileHover={{ scale: 1.06, boxShadow: "0 4px 32px 0 rgba(80,0,200,0.09)" }}
       className={clsx(
-        // Position fixe au-dessus de tout avec z-index élevé
-        "fixed top-4 left-4 z-50",
-        // Styles de base
-        "flex items-center space-x-2",
-        "px-5 py-2",
-        "bg-gray-50 bg-opacity-80 backdrop-blur-sm hover:bg-white hover:border-1",
-        "text-gray-800",
-        "rounded-2xl",
-        "shadow-md shadow-gray-300/50",
-        "focus:outline-none focus:ring-2 focus:ring-gray-400",
-        // Classes additionnelles passées depuis l'import
+        "fixed top-5 left-5 z-50",
+        "flex items-center gap-3 px-4 py-2",
+        "rounded-full border border-violet-200",
+        "bg-white/60 backdrop-blur-xl shadow-lg",
+        "transition-all duration-200",
+        "hover:bg-white/90 hover:border-violet-400",
+        "active:scale-95 active:shadow-md",
+        "focus:outline-none focus:ring-2 focus:ring-violet-400",
+        "text-violet-700 font-semibold",
         className
       )}
+      style={{
+        boxShadow: "0 4px 32px 0 rgba(80,0,200,0.06)",
+      }}
     >
-      <FaArrowLeft className="w-5 h-5" />
-      <span className="font-semibold">Retour</span>
+      <motion.span
+        initial={false}
+        animate={{ x: 0 }}
+        whileHover={{ x: -4 }}
+        transition={{ type: "spring", stiffness: 300 }}
+        className="flex"
+      >
+        <FaArrowLeft className="w-5 h-5" />
+      </motion.span>
+      <span className="hidden sm:inline font-semibold tracking-wide">Retour</span>
     </motion.button>
   );
 }

@@ -97,7 +97,7 @@ export default function DiscoverPage() {
 
         <main className="flex-1 flex flex-col h-screen overflow-hidden w-full">
           {/* HEADER BAR */}
-          <header className="flex-shrink-0 flex flex-col z-50 sm:flex-row items-center justify-between px-3 py-2 bg-white shadow-sm">
+          <header className="flex-shrink-0 flex z-50 sm:flex-row items-center justify-between px-3 py-2 bg-white shadow-sm">
             <DiscoverNav />
             <div className="flex items-center space-x-2 w-full sm:w-auto mt-2 sm:mt-0">
               <input

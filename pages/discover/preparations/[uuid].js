@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import Layout from "@/components/layout";
 import MobileNav from "@/components/nav/mobile_nav";
@@ -14,6 +14,40 @@ function splitToList(str) {
   if (!str) return [];
   if (Array.isArray(str)) return str;
   return str.split('\n').map(s => s.trim()).filter(Boolean);
+}
+
+// Composant pour la checklist des étapes de préparation
+function PreparationSteps({ steps }) {
+  const [checked, setChecked] = useState(Array(steps.length).fill(false));
+
+  const toggleStep = (i) => {
+    setChecked((prev) =>
+      prev.map((val, idx) => (idx === i ? !val : val))
+    );
+  };
+
+  return (
+    <ul className="ml-6 text-lg space-y-2">
+      {steps.map((step, i) => (
+        <li key={i}>
+          <label className="flex items-start gap-3 cursor-pointer select-none">
+            <span className="flex items-start pt-1">
+              <input
+                type="checkbox"
+                checked={checked[i]}
+                onChange={() => toggleStep(i)}
+                className="w-5 h-5 accent-violet-600"
+                style={{ minWidth: '1.25rem', minHeight: '1.25rem' }} // 1.25rem = 20px
+              />
+            </span>
+            <span className={checked[i] ? "line-through text-gray-400" : ""}>
+              {step}
+            </span>
+          </label>
+        </li>
+      ))}
+    </ul>
+  );
 }
 
 export default function PreparationPage() {
@@ -89,14 +123,14 @@ export default function PreparationPage() {
 
   return (
     <Layout>
-      <div className="w-full min-h-screen bg-violet-100 flex flex-col items-center">
+      <div className="w-full min-h-screen bg-violet-100 flex flex-col items-center mb-10">
         {/* Bandeau Titre + Infos */}
         <div
           className="mx-auto w-full max-w-7xl flex flex-col md:flex-row items-center p-8 bg-violet-200 shadow rounded-3xl"
           style={{ marginTop: BANNER_MARGIN, marginBottom: BANNER_MARGIN }}
         >
           <div className="flex-1 flex ml-12">
-            <h1 className="text-2xl md:text-4xl font-semibold uppercase tracking-tight text-gray-900 text-center">
+            <h1 className="text-4xl md:text-6xl font-semibold uppercase tracking-tight text-gray-900 text-center mb-6 md:mb-0">
               {preparation.name}
             </h1>
           </div>
@@ -128,14 +162,21 @@ export default function PreparationPage() {
               <h2 className="text-2xl font-bold mb-4">Ingrédients</h2>
               {ingredients.length > 0 ? (
                 <ul className="list-disc ml-6 text-lg">
-                  {ingredients.map((ing) => (
-                    <li key={ing.uuid}>
-                      <Link
-                        href={`/discover/preparations/ingredients/${ing.uuid}`}
-                        className="hover:text-purple-600 transition"
-                      >
-                        {ing.name}
-                      </Link>
+                  {ingredients.map((ing, i) => (
+                    <li key={ing.uuid} className="mb-2">
+                      <span className="inline-flex flex-wrap items-center gap-x-2 gap-y-1">
+                        <span className="font-medium whitespace-nowrap">
+                          {preparation.quantities && preparation.quantities[i] ? preparation.quantities[i] : "?"}
+                        </span>
+                        <span className="whitespace-nowrap">
+                          <Link
+                            href={`/discover/preparations/ingredients/${ing.uuid}`}
+                            className="text-black hover:text-purple-600 transition"
+                          >
+                            {ing.name}
+                          </Link>
+                        </span>
+                      </span>
                     </li>
                   ))}
                 </ul>
@@ -143,17 +184,14 @@ export default function PreparationPage() {
                 <p className="text-gray-500">Aucun ingrédient lié.</p>
               )}
             </section>
+
           </div>
           {/* Droite : Préparation (scrollable) */}
           <div className="w-1/2 min-w-[350px] flex flex-col">
             <section className="bg-white border-violet-200 border-2 p-6 rounded-2xl shadow-lg flex-1">
               <h2 className="text-2xl font-bold mb-4">Préparation</h2>
               {splitToList(preparation.preparation).length > 0 ? (
-                <ol className="list-decimal ml-6 text-lg space-y-1">
-                  {splitToList(preparation.preparation).map((step, i) => (
-                    <li key={i}>{step}</li>
-                  ))}
-                </ol>
+                <PreparationSteps steps={splitToList(preparation.preparation)} />
               ) : (
                 <p className="text-gray-500">Aucune étape.</p>
               )}

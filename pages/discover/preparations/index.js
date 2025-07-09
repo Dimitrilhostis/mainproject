@@ -47,13 +47,18 @@ export default function PreparationsPage() {
         </aside>
         <main className="flex-1 flex flex-col overflow-hidden">
 
-          <header className="flex-shrink-0 flex items-center justify-between px-4 py-2 bg-white shadow-sm">
-          <DiscoverNav />
+          <header className="relative flex items-center px-4 py-2 bg-white shadow-sm h-[64px]">
+            <div className="absolute left-4">
+                <DiscoverNav />
+            </div>
+            <h1 className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-3xl text-gray-700 font-bold text-center m-0 p-0 md:hidden">
+                PRÉPARATIONS
+            </h1>
             <button
-              onClick={() => router.push("/discover/preparations/ingredients")}
-              className="p-2 bg-white border rounded-lg hover:bg-gray-100 transition"
+                onClick={() => router.push("/discover/preparations/ingredients")}
+                className="absolute right-4 p-2 bg-white border rounded-lg hover:bg-gray-100 transition"
             >
-              <FaUtensils className="h-5 w-5 text-gray-600" />
+                <FaUtensils className="h-5 w-5 text-gray-600" />
             </button>
           </header>
 

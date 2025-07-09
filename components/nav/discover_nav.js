@@ -10,7 +10,7 @@ export default function DiscoverNav() {
 
   const tabs = [
     { label: "Programmes",   href: "/discover" },
-    { label: "Exercices",    href: "/discover/exercises" },
+    { label: "Séances",    href: "/discover/trainings" },
     { label: "Préparations", href: "/discover/preparations" },
   ];
 

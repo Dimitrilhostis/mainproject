@@ -83,11 +83,11 @@ export default function ExercisePage() {
 
   return (
     <Layout>
-      <div className="w-full min-h-screen bg-violet-100 flex flex-col items-center">
+      <div className="w-90% min-h-screen bg-violet-100 flex flex-col items-center">
 
         {/* Bandeau Titre + Infos */}
         <div
-          className="mx-auto w-full max-w-7xl flex flex-col md:flex-row items-center p-8 bg-violet-200 shadow rounded-3xl"
+          className="mx-auto w-90% max-w-7xl flex flex-col md:flex-row items-center p-8 bg-violet-200 shadow rounded-3xl"
           style={{ marginTop: BANNER_MARGIN, marginBottom: BANNER_MARGIN }}
         >
           <div className="flex-1 flex ml-12">
@@ -124,10 +124,11 @@ export default function ExercisePage() {
                 <h2 className="text-2xl font-bold mb-4">Muscles sollicités</h2>
                 <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-2 gap-4">
                   {muscles.map((m) => (
+                    <div key={m.uuid} className="w-32 border-1 border-violet-200 rounded-2xl hover:shadow-md transition overflow-hidden hover:scale-105 duration-200">
                     <Link
                       key={m.uuid}
                       href={`/admin/muscles/${m.uuid}`}
-                      className="bg-white rounded-lg shadow hover:shadow-md transition overflow-hidden hover:scale-105 duration-200 flex flex-col items-center"
+                      className="bg-white rounded-lg shadow  flex flex-col items-center"
                     >
                       <div className="relative h-20 w-20 mb-2">
                         <Image
@@ -141,6 +142,7 @@ export default function ExercisePage() {
                         <h3 className="font-semibold text-center">{m.name}</h3>
                       </div>
                     </Link>
+                    </div>
                   ))}
                 </div>
               </section>

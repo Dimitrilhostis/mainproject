@@ -9,8 +9,8 @@ import SideBar from "@/components/nav/sidebar";
 import MobileNav from "@/components/nav/mobile_nav";
 import Loader from "@/components/loader";
 import DiscoverNav from "@/components/nav/discover_nav";
-import { ExercisesCard } from "@/components/cards/discover_cards";
-import { FaDumbbell } from "react-icons/fa";
+import { GiMuscleUp } from "react-icons/gi";
+import { TrainingCard } from "@/components/cards/discover_cards";
 
 export default function ExercisesPage() {
   const router = useRouter();
@@ -19,7 +19,7 @@ export default function ExercisesPage() {
 
   useEffect(() => {
     supabase
-      .from("exercises")
+      .from("trainings")
       .select("uuid, name, image_url")
       .order("created_at", { ascending: false })
       .then(({ data, error }) => {
@@ -47,23 +47,28 @@ export default function ExercisesPage() {
         </aside>
         <main className="flex-1 flex flex-col overflow-hidden">
 
-          <header className="flex-shrink-0 flex items-center justify-between px-4 py-2 bg-white shadow-sm">
-          <DiscoverNav />
+        <header className="relative flex items-center px-4 py-2 bg-white shadow-sm h-[64px]">
+            <div className="absolute left-4">
+                <DiscoverNav />
+            </div>
+            <h1 className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-3xl text-gray-700 font-bold text-center m-0 p-0 md:hidden">
+                SÉANCES
+            </h1>
             <button
-              onClick={() => router.push("/discover/exercises/muscles")}
-              className="p-2 bg-white border rounded-lg hover:bg-gray-100 transition"
+                onClick={() => router.push("/discover/trainings/exercises")}
+                className="absolute right-4 p-2 bg-white border rounded-lg hover:bg-gray-100 transition"
             >
-              <FaDumbbell className="h-5 w-5 text-gray-600" />
+                <GiMuscleUp className="h-5 w-5 text-gray-600" />
             </button>
-          </header>
+        </header>
 
           <div className="flex-1 overflow-y-auto p-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {items.map((item) => (
-              <ExercisesCard
+              <TrainingCard
                 key={item.uuid}
                 item={item}
                 onClick={() => {
-                  router.push(`exercises/${item.uuid}`);
+                  router.push(`trainings/${item.uuid}`);
                 }}
               />
             ))}
