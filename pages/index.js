@@ -31,9 +31,7 @@ export default function HomePage() {
   const [selectedService, setSelectedService] = useState(null);
   const [activeTab, setActiveTab] = useState('plans');
 
-  // Auth check
-  useEffect(() => { if (!authLoading && !user) router.replace('/login'); }, [authLoading, user]);
-
+  
   // Fetch programs
   useEffect(() => {
     if (authLoading || !user) return;
@@ -85,6 +83,17 @@ export default function HomePage() {
             </div>
           </motion.section>
 
+          {!user && !authLoading && (
+            <div className="flex justify-center mt-8">
+              <button
+                className="bg-purple-600 text-white px-6 py-3 rounded-lg text-xl hover:bg-purple-700 transition"
+                onClick={() => router.push("/auth")} // ou "/login" selon ta route d'auth
+              >
+                Se connecter / S’inscrire
+              </button>
+            </div>
+          )}
+          
           {/* Decorative Accent */}
           <div className="h-4 bg-gradient-to-r from-purple-600 to-fuchsia-600" />
 

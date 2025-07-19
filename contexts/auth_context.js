@@ -36,12 +36,11 @@ export function AuthProvider({ children }) {
   const signIn       = (email, pw) => supabase.auth.signInWithPassword({ email, password: pw });
   const signUp       = (email, pw) => supabase.auth.signUp({ email, password: pw });
   const signOut      = () => supabase.auth.signOut();
-  const sendMagicLink= (email) => supabase.auth.signInWithOtp({ email });
-  const resetPassword = (email) =>
-    supabase.auth.resetPasswordForEmail(email, { redirectTo: `${process.env.NEXT_PUBLIC_URL}/reset-password` });
+  const signInWithGoogle = () => supabase.auth.signInWithOAuth({ provider: 'google' });
+
 
   return (
-    <AuthContext.Provider value={{ user, loading, signIn, signUp, signOut, sendMagicLink, resetPassword }}>
+    <AuthContext.Provider value={{ user, loading, signIn, signUp, signOut, signInWithGoogle }}>
       {children}
     </AuthContext.Provider>
   );

@@ -6,6 +6,7 @@ export default function PreparationForm({ toEdit, onSaved }) {
   const [form, setForm] = useState({ 
     name:'', 
     ingredient_uuid: [], // Tableau UUID au lieu de string
+    qunatities: [],
     preparation: [''], 
     association: '', 
     image_url: '', 
@@ -76,7 +77,8 @@ export default function PreparationForm({ toEdit, onSaved }) {
         onChange={e => setIngredientUuidsInput(e.target.value)}
         className="w-full p-2 border rounded h-16"
       />
-      
+      <label className='text-neutral-500'>Quantities</label>
+      <textarea name="quantites" value={form.preparation.join('\n')} onChange={e=>setForm({...form, quantities: e.target.value.split('\n')})} className="w-full p-2 border rounded h-16" />
       <label className='text-neutral-500'>Préparation</label>
       <textarea name="preparation" value={form.preparation.join('\n')} onChange={e=>setForm({...form, preparation: e.target.value.split('\n')})} className="w-full p-2 border rounded h-16" />
       <label className='text-neutral-500'>Associations</label>

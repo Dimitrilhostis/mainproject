@@ -11,6 +11,7 @@ import NutritionForm from '@/components/forms/nutrition_form';
 import SportCard from '@/components/cards/card_sport';
 import SportForm from '@/components/forms/sport_form';
 import Link from 'next/link';
+import AuthGuard from '@/components/auth/auth_gard';
 
 export default function ProgramsPersoPage() {
   const { user, loading: authLoading } = useAuth();
@@ -40,6 +41,7 @@ export default function ProgramsPersoPage() {
 
   return (
     <Layout>
+    <AuthGuard>
       <div className="flex h-screen w-screen">
         <aside className="hidden md:flex"><SideBar/></aside>
         <main className="flex-1 overflow-auto p-6 bg-gray-50 space-y-8">
@@ -76,6 +78,7 @@ export default function ProgramsPersoPage() {
         </main>
         <MobileNav />
       </div>
+    </AuthGuard>
     </Layout>
   );
 }

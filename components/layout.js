@@ -2,14 +2,9 @@
 "use client";
 
 
-export default function Layout({ children }) {
-  return (
-    <div className="min-h-screen flex bg-violet-100">
+import useAutoLogout from "@/hooks/use_auth_logout";
 
-      {/* Zone principale : on centre toujours le contenu */}
-      <div className="flex-1 flex bg-violet-100">
-        {children}
-      </div>
-    </div>
-  );
+export default function Layout({ children }) {
+  useAutoLogout(15 * 60 * 1000); // 15 min
+  return <>{children}</>;
 }
