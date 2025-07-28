@@ -4,7 +4,6 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import Layout from "@/components/layout";
-import SideBar from "@/components/sidebar";
 import Loader from "@/components/loader";
 import { supabase } from "@/lib/supabaseClient";
 import { useAuth } from "@/contexts/auth_context";
@@ -109,8 +108,7 @@ export default function ProfileFormPage() {
   return (
     <Layout>
       <div className="flex w-screen h-screen">
-        <SideBar minWidth={65} maxWidth={250} defaultWidth={65} />
-        <div className="flex-1 flex flex-col items-center justify-start bg-gray-50 p-8 overflow-auto">
+*        <div className="flex-1 flex flex-col items-center justify-start bg-gray-50 p-8 overflow-auto">
           <h1 className="text-3xl font-bold text-gray-800 mb-6">
             Ton Profil
           </h1>
