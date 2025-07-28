@@ -4,7 +4,6 @@ import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/router";
 import { supabase } from "@/lib/supabaseClient";
 import Layout from "@/components/layout";
-import SideBar from "@/components/sidebar";
 import MobileNav from "@/components/nav/mobile_nav";
 import Loader from "@/components/loader";
 import { useAuth } from "@/contexts/auth_context";
@@ -90,10 +89,7 @@ export default function DiscoverPage() {
   return (
     <Layout>
       <div className="flex h-screen w-screen overflow-hidden">
-        {/* Sidebar desktop only */}
-        <div className="hidden lg:block">
-          <SideBar />
-        </div>
+        
 
         <main className="flex-1 flex flex-col h-screen overflow-hidden w-full">
           {/* HEADER BAR */}
