@@ -5,7 +5,6 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import Layout from "@/components/layout";
-import SideBar from "@/components/sidebar";
 import MobileNav from "@/components/nav/mobile_nav";
 import Loader from "@/components/loader";
 import DiscoverNav from "@/components/nav/discover_nav";
@@ -43,7 +42,6 @@ export default function ExercisesPage() {
     <Layout>
       <div className="flex h-screen w-screen overflow-hidden">
         <aside className="hidden md:flex">
-          <SideBar />
         </aside>
         <main className="flex-1 flex flex-col overflow-hidden">
 
