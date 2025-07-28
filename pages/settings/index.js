@@ -13,22 +13,15 @@ import Image from 'next/image';
 export default function SettingsPage() {
   const { user, signOut, loading: authLoading } = useAuth();
   const router = useRouter();
-  const [active, setActive] = useState('account');
+  const [active, setActive] = useState('payments');
   const [loading, setLoading] = useState(true);
 
-  // Mock payment methods
-  const [payments, setPayments] = useState([
-    { id: 1, method: 'Visa **** 1234' },
-    { id: 2, method: 'Mastercard **** 5678' },
-  ]);
+  // No predefined payment methods
+  const [payments, setPayments] = useState([]);
 
-  // Mock subscription
+  // Subscription plans
   const plans = ['Gratuit', 'Premium', 'Premium+'];
-  const [subscription, setSubscription] = useState('Premium');
-  const [purchases, setPurchases] = useState([
-    'E‑book Nutrition 101',
-    'Pack Yoga Débutant',
-  ]);
+  const [subscription, setSubscription] = useState('Gratuit');
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -54,41 +47,40 @@ export default function SettingsPage() {
   }
 
   const tabs = [
-    { key: 'account', label: 'Mon compte' },
     { key: 'payments', label: 'Méthodes de paiement' },
     { key: 'subscriptions', label: 'Abonnements & achats' },
+    { key: 'account', label: 'Mon compte' },
   ];
 
   return (
     <Layout>
       <Header />
       <main className="w-screen min-h-screen relative bg-[var(--background)] text-[var(--text1)]">
-        {/* Background */}
-        <div
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: "url('/images/hero-bg.jpg')" }}
-        />
-        <div className="absolute inset-0 bg-[var(--background)]/80" />
+        {/* Full background image */}
+        <div className="absolute inset-0">
+          <Image src="/images/hero-bg.jpg" alt="Background" fill className="object-contain object-top" />
+        </div>
+        <div className="absolute inset-0 bg-[var(--background)]/50" />
 
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5 }}
-          className="relative z-10 max-w-lg mx-auto mt-24 mb-16 bg-transparent backdrop-blur-2xl border border-[var(--text3)]/20 rounded-3xl p-6 shadow-xl"
+          transition={{ duration: 0.4 }}
+          className="relative z-10 max-w-lg mx-auto mt-24 mb-16 bg-transparent backdrop-blur-2xl border border-[var(--text3)]/30 rounded-3xl p-6 shadow-xl"
         >
           <h1 className="text-3xl font-bold mb-4">Paramètres</h1>
 
-          {/* Tabs */}
+          {/* Tabs navigation */}
           <nav className="mb-6">
             <ul className="flex space-x-4">
               {tabs.map(tab => (
                 <li key={tab.key}>
                   <button
                     onClick={() => setActive(tab.key)}
-                    className={`px-3 py-1 text-sm font-medium rounded-full transition $
-                      {active === tab.key
+                    className={`px-4 py-1 text-sm font-medium rounded-full transition 
+                      ${active === tab.key
                         ? 'bg-[var(--green2)] text-[var(--background)]'
-                        : 'text-[var(--text2)] hover:text-[var(--text1)]'}
+                        : 'text-[var(--text2)] hover:bg-[var(--light-dark)] hover:text-[var(--text1)]'}
                     `}
                   >
                     {tab.label}
@@ -98,8 +90,53 @@ export default function SettingsPage() {
             </ul>
           </nav>
 
-          {/* Content */}
+          {/* Tab content */}
           <div className="space-y-6">
+            {/* Payments tab */}
+            {active === 'payments' && (
+              <div className="space-y-4">
+                {payments.length === 0 ? (
+                  <p className="text-[var(--text2)]">Aucune méthode de paiement enregistrée.</p>
+                ) : (
+                  payments.map(p => (
+                    <div key={p.id} className="flex justify-between p-3 bg-[var(--light-dark)] rounded-lg">
+                      <span>{p.method}</span>
+                      <button className="text-red-500 hover:text-red-400">Supprimer</button>
+                    </div>
+                  ))
+                )}
+                <button className="mt-2 px-4 py-2 bg-[var(--green2)] hover:bg-[var(--green3)] text-[var(--background)] rounded-lg transition">
+                  Ajouter une méthode
+                </button>
+              </div>
+            )}
+
+            {/* Subscriptions tab */}
+            {active === 'subscriptions' && (
+              <div className="space-y-4">
+                <div>
+                  <h2 className="font-medium">Plan actuel :</h2>
+                  <p className="mt-1 font-semibold">{subscription}</p>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  {plans.map(plan => (
+                    <button
+                      key={plan}
+                      onClick={() => setSubscription(plan)}
+                      className={`px-3 py-2 rounded-lg transition 
+                        ${subscription === plan
+                          ? 'bg-[var(--green2)] text-[var(--background)]'
+                          : 'bg-[var(--light-dark)] text-[var(--text1)] hover:bg-[var(--details-dark)] hover:text-[var(--text1)]'}
+                      `}
+                    >
+                      {plan}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Account tab */}
             {active === 'account' && (
               <div className="space-y-4">
                 <p>Email : <span className="font-semibold">{user.email}</span></p>
@@ -109,60 +146,6 @@ export default function SettingsPage() {
                 >
                   Se déconnecter
                 </button>
-              </div>
-            )}
-
-            {active === 'payments' && (
-              <div className="space-y-4">
-                {payments.map(p => (
-                  <div
-                    key={p.id}
-                    className="flex justify-between items-center p-3 bg-[var(--light-dark)] rounded-lg"
-                  >
-                    <span>{p.method}</span>
-                    <button className="text-red-500 hover:text-red-400">
-                      Supprimer
-                    </button>
-                  </div>
-                ))}
-                <button className="mt-2 px-4 py-2 bg-[var(--green2)] hover:bg-[var(--green3)] text-[var(--background)] rounded-lg transition">
-                  Ajouter une méthode
-                </button>
-              </div>
-            )}
-
-            {active === 'subscriptions' && (
-              <div className="space-y-4">
-                <div>
-                  <h2 className="font-medium">Plan actuel :</h2>
-                  <p className="mt-1 font-semibold">{subscription}</p>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  {plans.map(plan => (
-                    <button
-                      key={plan}
-                      onClick={() => setSubscription(plan)}
-                      className={`px-4 py-2 rounded-lg transition $
-                        {subscription === plan
-                          ? 'bg-[var(--green2)] text-[var(--background)]'
-                          : 'bg-[var(--light-dark)] text-[var(--text1)] hover:bg-[var(--details-dark)]'}
-                      `}
-                    >
-                      {plan}
-                    </button>
-                  ))}
-                </div>
-                <div>
-                  <h2 className="font-medium">Achats :</h2>
-                  <ul className="mt-2 space-y-2">
-                    {purchases.map(item => (
-                      <li key={item} className="flex justify-between p-3 bg-[var(--light-dark)] rounded-lg">
-                        <span>{item}</span>
-                        <span className="font-semibold">Acheté</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
               </div>
             )}
           </div>
