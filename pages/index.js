@@ -90,7 +90,7 @@ export default function HomePage() {
                 <div className="grid grid-cols-2 gap-6">
                   {displaySport.map((p) => (
                     <Link key={p.uuid} href={`/programs?type=sport&uuid=${p.uuid}`}>
-                      <a>
+                      
                         <CustomCard className="hover:shadow-lg transition">
                           <div className="relative h-32 w-full">
                             <Image src="/images/muscles.webp" alt={p.name} fill className="object-cover rounded-t-xl" />
@@ -100,13 +100,13 @@ export default function HomePage() {
                             <p className="text-[var(--text2)] text-sm">{p.description}</p>
                           </div>
                         </CustomCard>
-                      </a>
+                      
                     </Link>
                   ))}
                 </div>
                 <div className="mt-6">
                   <Link href="/programs?type=sport">
-                    <a className="text-[var(--green2)] hover:underline">Voir tous les programmes de sport</a>
+                    <p className="text-[var(--green2)] hover:underline">Voir tous les programmes de sport</p>
                   </Link>
                 </div>
               </div>
@@ -117,7 +117,7 @@ export default function HomePage() {
                 <div className="grid grid-cols-2 gap-6">
                   {displayNutrition.map((p) => (
                     <Link key={p.uuid} href={`/programs?type=nutrition&uuid=${p.uuid}`}>
-                      <a>
+                      
                         <CustomCard className="hover:shadow-lg transition">
                           <div className="relative h-32 w-full">
                             <Image src="/images/muscles.webp" alt={p.name} fill className="object-cover rounded-t-xl" />
@@ -127,13 +127,13 @@ export default function HomePage() {
                             <p className="text-[var(--text2)] text-sm">{p.description}</p>
                           </div>
                         </CustomCard>
-                      </a>
+                      
                     </Link>
                   ))}
                 </div>
                 <div className="mt-6">
                   <Link href="/programs?type=nutrition">
-                    <a className="text-[var(--green2)] hover:underline">Voir tous les programmes de nutrition</a>
+                    <p className="text-[var(--green2)] hover:underline">Voir tous les programmes de nutrition</p>
                   </Link>
                 </div>
               </div>
@@ -145,35 +145,34 @@ export default function HomePage() {
         <section id="roadmap" className="py-32 bg-[var(--details-dark)]">
           <div className="max-w-7xl mx-auto px-6 text-center">
             <h2 className="text-4xl font-bold text-[var(--green1)] mb-12">Roadmaps</h2>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <Link href="/roadmaps?variant=nutrition">
-                <a>
-                  <CustomCard className="hover:shadow-lg transition">
-                    <div className="relative h-64 w-full">
-                      <Image src="/images/muscles.webp" alt="Nutrition Roadmap" fill className="object-cover" />
-                    </div>
-                    <div className="p-4 bg-[var(--details-dark)]">
-                      <h3 className="text-xl font-semibold mb-2 text-[var(--text1)]">Roadmap Nutrition</h3>
-                      <Button small>Voir</Button>
-                    </div>
-                  </CustomCard>
-                </a>
-              </Link>
+             
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <div className="bg-gray-800 rounded-xl p-4 hover:shadow-[0_0_10px_var(--green3)] transition-shadow">
               <Link href="/roadmaps?variant=muscles">
-                <a>
-                  <CustomCard className="hover:shadow-lg transition">
-                    <div className="relative h-64 w-full">
-                      <Image src="/images/muscles.webp" alt="Muscles Roadmap" fill className="object-cover" />
-                    </div>
-                    <div className="p-4 bg-[var(--details-dark)]">
-                      <h3 className="text-xl font-semibold mb-2 text-[var(--text1)]">Roadmap Muscles</h3>
-                      <Button small>Voir</Button>
-                    </div>
-                  </CustomCard>
-                </a>
-              </Link>
+                {/* <RoadmapComponent variant="nutrition" /> */}
+                <Image
+                  src="/images/muscles.webp"
+                  alt="Nutrition Roadmap"
+                  width={600}
+                  height={300}
+                  className="rounded-xl object-cover w-full"
+                />
+                </Link>
+              </div>
+              <div className="bg-gray-800 rounded-xl p-4 hover:shadow-[0_0_10px_var(--green3)] transition-shadow">
+              <Link href="/roadmaps?variant=muscles">
+                {/* <RoadmapComponent variant="muscles" /> */}
+                <Image
+                  src="/images/muscles.webp"
+                  alt="Muscles Roadmap"
+                  width={600}
+                  height={300}
+                  className="rounded-xl object-cover w-full"
+                />
+                </Link>
+              </div>
+              </div>
             </div>
-          </div>
         </section>
 
         {/* Ebooks */}
@@ -183,17 +182,23 @@ export default function HomePage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
               {[1,2,3,4].map(i => (
                 <Link key={i} href={`/ebooks/${i}`}>
-                  <a>
-                    <CustomCard className="hover:shadow-lg transition">
-                      <div className="relative h-32 w-full">
-                        <Image src="/images/muscles.webp" alt={`E-book ${i}`} fill className="object-cover rounded-t-xl" />
-                      </div>
-                      <div className="p-4">
-                        <h3 className="text-xl font-semibold mb-2 text-[var(--text1)]">E-book {i}</h3>
-                        <Button small>Télécharger</Button>
-                      </div>
-                    </CustomCard>
-                  </a>
+                  
+                    <CustomCard key={i} className="overflow-hidden">
+                  <Image
+                    src="/images/muscles.webp"
+                    alt={`E-book ${i}`}
+                    width={400}
+                    height={160}
+                    className="object-cover w-full h-32 rounded-t-xl"
+                  />
+                  <div className="p-4">
+                    <h3 className="text-xl font-semibold mb-2">E‑book {i}</h3>
+                    <p className="text-[var(--text1)] text-sm">
+                      Téléchargez notre guide complet.
+                    </p>
+                  </div>
+                </CustomCard>
+                  
                 </Link>
               ))}
             </div>
@@ -227,7 +232,7 @@ export default function HomePage() {
                 <ul className="space-y-1">
                   <li>
                     <Link href="/settings">
-                      <a className="hover:underline">{col}</a>
+                      <p className="hover:underline">{col}</p>
                     </Link>
                   </li>
                 </ul>
