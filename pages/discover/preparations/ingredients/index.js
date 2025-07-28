@@ -48,7 +48,7 @@ export default function IngredientsPage() {
             >
               <FaArrowLeft className="h-5 w-5 text-gray-600"/>
             </button>
-            <h1 className="text-3xl text-gray-700 font-bold text-center flex-1">MUSCLES</h1>
+            <h1 className="text-3xl text-gray-700 font-bold text-center flex-1">INGREDIENTS</h1>
           </header>
 
           <div className="flex-1 overflow-y-auto p-4 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-6">

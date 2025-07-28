@@ -17,41 +17,20 @@ import Link from 'next/link';
 
 const Button = ({
   href,
-  bgColor,
-  textColor,
-  width,
-  height,
   children,
   onClick,
-  className,
 }) => {
-  // Base styles: rounded corners, slight shadow, centered content, transition.
-  const baseClasses = 'py-1 px-2 m-1 inline-flex items-center justify-center rounded-lg shadow-sm transition-opacity duration-100 hover:opacity-90';
-
-  // Dynamic size using bracket notation for arbitrary values.
-  const sizeClasses = [
-    width ? `w-[${width}]` : '',
-    height ? `h-[${height}]` : '',
-  ]
-    .filter(Boolean)
-    .join(' ');
-
-  const colorClasses = [bgColor, textColor].filter(Boolean).join(' ');
-
-  const combined = [baseClasses, sizeClasses, colorClasses, className]
-    .filter(Boolean)
-    .join(' ');
 
   if (href) {
     return (
-      <Link href={href} className={combined}>
+      <Link href={href} className="bg-[var(--green1)] hover:bg-[var(--green2)] text-[var(--text)] font-semibold py-3 px-6 rounded-full">
         {children}
       </Link>
     );
   }
 
   return (
-    <button onClick={onClick} className={combined}>
+    <button onClick={onClick} className="bg-[var(--green1)] hover:bg-[var(--green2)] text-[var(--text)] font-semibold py-3 px-6 rounded-full">
       {children}
     </button>
   );
@@ -59,23 +38,8 @@ const Button = ({
 
 Button.propTypes = {
   href: PropTypes.string,
-  bgColor: PropTypes.string,
-  textColor: PropTypes.string,
-  width: PropTypes.string,
-  height: PropTypes.string,
   children: PropTypes.node.isRequired,
   onClick: PropTypes.func,
-  className: PropTypes.string,
-};
-
-Button.defaultProps = {
-  href: '/',
-  bgColor: 'bg-blue-500',
-  textColor: 'text-white',
-  width: 'w-30',
-  height: 'h-10',
-  onClick: undefined,
-  className: '',
 };
 
 export default Button;

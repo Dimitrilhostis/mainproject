@@ -1,8 +1,9 @@
-'use client';
+"use client";
+
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
 import Layout from '@/components/layout';
-import SideBar from '@/components/nav/sidebar';
-import MobileNav from '@/components/nav/mobile_nav';
+import Header from '@/components/header';
 import Loader from '@/components/loader';
 import { useAuth } from '@/contexts/auth_context';
 import { supabase } from '@/lib/supabaseClient';
@@ -11,74 +12,144 @@ import NutritionForm from '@/components/forms/nutrition_form';
 import SportCard from '@/components/cards/card_sport';
 import SportForm from '@/components/forms/sport_form';
 import Link from 'next/link';
-import AuthGuard from '@/components/auth/auth_gard';
 
 export default function ProgramsPersoPage() {
   const { user, loading: authLoading } = useAuth();
-  const [nutItems, setNut] = useState([]);
-  const [sportItems, setSport] = useState([]);
+  const router = useRouter();
+  const [nutItems, setNutItems] = useState([]);
+  const [sportItems, setSportItems] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [editNutId, setEditNut] = useState(null);
-  const [editSportId, setEditSport] = useState(null);
+  const [editNutId, setEditNutId] = useState(null);
+  const [editSportId, setEditSportId] = useState(null);
 
   useEffect(() => {
-    if (authLoading || !user) return;
+    if (authLoading) return;
+    if (!user) {
+      setLoading(false);
+      return;
+    }
     (async () => {
       setLoading(true);
-      const { data: nuts } = await supabase.from('program_perso_nutrition').select('*').eq('user_id', user.id);
-      const { data: sports } = await supabase.from('program_perso_sport').select('*').eq('user_id', user.id);
-      setNut(nuts || []);
-      setSport(sports || []);
+      let nutQuery = supabase.from('program_perso_nutrition').select('*');
+      let sportQuery = supabase.from('program_perso_sport').select('*');
+      if (user) {
+        nutQuery = nutQuery.eq('user_id', user.id);
+        sportQuery = sportQuery.eq('user_id', user.id);
+      }
+      const [{ data: nuts }, { data: sports }] = await Promise.all([
+        nutQuery,
+        sportQuery,
+      ]);
+      setNutItems(nuts || []);
+      setSportItems(sports || []);
       setLoading(false);
     })();
   }, [authLoading, user]);
 
-  if (authLoading || loading) return <Layout><Loader/></Layout>;
+  // 1. Auth loading
+  if (authLoading) {
+    return (
+      <Layout>
+        <Header />
+        <main className="w-screen h-screen flex justify-center items-center">
+          <Loader />
+        </main>
+      </Layout>
+    );
+  }
 
-  const refresh = () => window.location.reload();
-  const nutToEdit = nutItems.find(i => i.id === editNutId);
-  const sportToEdit = sportItems.find(i => i.id === editSportId);
+  // 2. Not authenticated
+  if (!user) {
+    return (
+      <Layout>
+        <Header />
+        <main
+          className="w-screen h-screen bg-cover bg-center relative flex flex-col justify-center items-center text-white p-6"
+        >
+          {/* Background Image */}
+        <div
+          className="absolute inset-0 bg-cover bg-center"
+          style={{ backgroundImage: "url('/images/hero-bg.jpg')" }}
+        />
+        {/* Dark Overlay */}
+        <div className="absolute inset-0 bg-[var(--background)]/80" />
+          <div className="absolute inset-0 bg-black bg-opacity-50" />
+          <div className="relative z-10 text-center space-y-4">
+            <p className="text-2xl font-bold">
+              Vous devez vous connecter pour accéder aux programmes personnalisés.
+            </p>
+            <Link href="/login">
+              <button className="px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition">
+                Se connecter
+              </button>
+            </Link>
+          </div>
+        </main>
+      </Layout>
+    );
+  }
+
+  // 3. Data loading
+  if (loading) {
+    return (
+      <Layout>
+        <Header />
+        <main className="w-screen h-screen flex justify-center items-center">
+          <Loader />
+        </main>
+      </Layout>
+    );
+  }
+
+  // 4. Render content
+  const refreshPage = () => window.location.reload();
+  const nutToEdit = nutItems.find(item => item.id === editNutId);
+  const sportToEdit = sportItems.find(item => item.id === editSportId);
 
   return (
     <Layout>
-    <AuthGuard>
-      <div className="flex h-screen w-screen">
-        <aside className="hidden md:flex"><SideBar/></aside>
-        <main className="flex-1 overflow-auto p-6 bg-gray-50 space-y-8">
-          <h1 className="text-3xl font-bold mb-4 text-center">Programmes Personnalisés</h1>
+      <Header />
+      <main className="relative w-screen min-h-screen flex justify-center items-start p-6 pt-24">
+        <div className="w-full max-w-4xl bg-white bg-opacity-10 backdrop-blur-xl rounded-2xl shadow-2xl p-8 space-y-8">
+          <h1 className="text-4xl font-extrabold text-white text-center">
+            Programmes Personnalisés
+          </h1>
 
-          {/* Nutrition */}
+          {/* Nutrition Section */}
           <section className="space-y-4">
-            <h2 className="text-2xl font-semibold">Nutrition</h2>
+            <h2 className="text-2xl font-semibold text-green-300">Nutrition</h2>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <NutritionForm user={user} onSuccess={refresh} toEdit={nutToEdit} />
+              <div className="bg-white bg-opacity-20 backdrop-blur-sm rounded-xl p-4">
+                <NutritionForm user={user} toEdit={nutToEdit} onSuccess={refreshPage} />
+              </div>
               {nutItems.map(item => (
-                <div key={item.id} onClick={() => setEditNut(item.id)}>
-                  <NutritionCard item={item} />
+                <div key={item.id} onClick={() => setEditNutId(item.id)} className="cursor-pointer">
+                  <NutritionCard item={item} className="bg-white bg-opacity-20 rounded-xl p-4" />
                 </div>
               ))}
             </div>
           </section>
 
-          {/* Sport */}
+          {/* Sport Section */}
           <section className="space-y-4">
-            <h2 className="text-2xl font-semibold">Sport</h2>
+            <h2 className="text-2xl font-semibold text-green-300">Sport</h2>
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              <SportForm user={user} onSuccess={refresh} toEdit={sportToEdit} />
+              <div className="bg-white bg-opacity-20 backdrop-blur-sm rounded-xl p-4">
+                <SportForm user={user} toEdit={sportToEdit} onSuccess={refreshPage} />
+              </div>
               {sportItems.map(item => (
-                <div key={item.id} onClick={() => setEditSport(item.id)}>
-                  <SportCard item={item} />
+                <div key={item.id} onClick={() => setEditSportId(item.id)} className="cursor-pointer">
+                  <SportCard item={item} className="bg-white bg-opacity-20 rounded-xl p-4" />
                 </div>
               ))}
             </div>
           </section>
 
-          <Link href={`/programs/perso/${user.id}`}>Voir les programmes perso</Link>
-
-        </main>
-        <MobileNav />
-      </div>
-    </AuthGuard>
+          <div className="text-center">
+            <Link href={`/programs/perso/${user.id}`}>Voir les programmes complets</Link>
+          </div>
+        </div>
+      </main>
     </Layout>
   );
 }

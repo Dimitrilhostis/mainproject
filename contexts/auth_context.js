@@ -25,6 +25,12 @@ export function AuthProvider({ children }) {
       setUser(session?.user || null);
       setLoading(false);
     });
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log("⚙️ getSession →", session);
+      setUser(session?.user || null);
+      setLoading(false);
+    });
+    
     // Écoute les changements
     const { data: listener } = supabase.auth.onAuthStateChange((_e, session) => {
       setUser(session?.user || null);

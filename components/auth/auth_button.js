@@ -29,7 +29,7 @@ export default function AuthButton({
         const { data: profile, error: profErr } = await supabase
           .from('profiles')
           .select('name')
-          .eq('user_id', user.id)
+          .eq('user_id', user.uid)
           .single();
         if (profErr) {
           console.log('AuthButton: erreur fetch profile', profErr.message);

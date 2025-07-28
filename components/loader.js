@@ -4,7 +4,7 @@
 export default function Loader() {
   return (
     <div className="flex items-center justify-center">
-      <div className="animate-spin h-10 w-10 border-8 border-violet-200 border-t-purple-800 rounded-full"></div>
+      <div className="animate-spin h-12 w-12 border-6 border-[var(--text)] border-t-[var(--green3)] rounded-full"></div>
     </div>
   );
 }

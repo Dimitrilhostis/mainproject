@@ -9,11 +9,11 @@ export default function AuthGuard({ children }) {
 
   useEffect(() => {
     if (!loading && !user) {
-      router.replace("/auth");
+      router.replace("/login");
     }
   }, [user, loading, router]);
 
-  if (loading || !user) return <div>Chargement…</div>;
+  if (loading || !user) return <loader></loader>;
 
   return children;
 }

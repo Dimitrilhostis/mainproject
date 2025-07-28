@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import Layout from "@/components/layout";
-import SideBar from "@/components/nav/sidebar";
+import SideBar from "@/components/sidebar";
 import MobileNav from "@/components/nav/mobile_nav";
 import Loader from "@/components/loader";
 import { MuscleCard } from "@/components/cards/discover_cards";

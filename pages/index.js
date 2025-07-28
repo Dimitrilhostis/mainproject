@@ -1,188 +1,382 @@
+// pages/index.jsx
 "use client";
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/router';
-import Layout from '@/components/layout';
-import SideBar from '@/components/nav/sidebar';
-import ProgramCard from '@/components/cards/card_program';
-import { supabase } from '../lib/supabaseClient';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useAuth } from '@/contexts/auth_context';
-import Loader from '@/components/loader';
-import MobileNav from '@/components/nav/mobile_nav';
-import { IoClose } from 'react-icons/io5';
-import { FaMoneyBillAlt } from 'react-icons/fa';
-import { GiBiceps } from "react-icons/gi";
-import { MdFoodBank, MdCoPresent } from "react-icons/md";
-
-
-
-
-
-// Motion variants
-const fade = { hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { duration: 0.5 } } };
-const modalFade = { hidden: { opacity: 0, scale: 0.9 }, visible: { opacity: 1, scale: 1, transition: { type: 'spring', stiffness: 300, damping: 20 } }, exit: { opacity: 0, scale: 0.9 } };
+import { useState, useEffect } from "react";
+import Image from "next/image";
+import Layout from "@/components/layout";
+import { supabase } from "../lib/supabaseClient";
+import { useAuth } from "@/contexts/auth_context";
+import Loader from "@/components/loader";
+import Button from "@/components/buttons/button";
+import CustomCard from "@/components/cards/custom_card";
+import Header from "@/components/header";
+import { useRouter } from "next/navigation";
 
 export default function HomePage() {
-  const router = useRouter();
   const { user, loading: authLoading } = useAuth();
   const [programs, setPrograms] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedService, setSelectedService] = useState(null);
-  const [activeTab, setActiveTab] = useState('plans');
+  const [scrolled, setScrolled] = useState(false);
+  const router = useRouter();
 
-  
-  // Fetch programs
-  useEffect(() => {
-    if (authLoading || !user) return;
-    supabase.from('programs').select('*').then(({ data }) => { setPrograms(data || []); setLoading(false); });
-  }, [authLoading, user]);
+  const goToTimer = (mode) => () => {
+    router.push({
+      pathname: "/timer",
+      query: { mode },
+    });
+  };
 
+  // Récupération des programmes
   useEffect(() => {
-    if (selectedService) {
-      setActiveTab(selectedService);
+    if (!authLoading) {
+      supabase
+        .from("programs")
+        .select("*")
+        .then(({ data }) => {
+          setPrograms(data || []);
+          setLoading(false);
+        });
     }
-  }, [selectedService]);
+  }, [authLoading]);
+
+  // Gestion du style du header au scroll
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 50);
+    window.addEventListener("scroll", onScroll);
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  // Ancre scroll
+  const scrollTo = (id) => () =>
+    document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
 
   if (authLoading || loading) {
-    return <Layout><div className="flex items-center justify-center h-screen w-screen"><Loader /></div></Layout>;
+    return (
+      <Layout>
+        <div className="flex items-center justify-center h-screen w-screen bg-[var(--background)]">
+          <Loader />
+        </div>
+      </Layout>
+    );
   }
 
-  const services = [
-    { id: 'sport', title: 'Sportif', icone: <GiBiceps className="absolute top-4 right-4 text-purple-400 text-2xl"/> },
-    { id: 'nutrition', title: 'Nutrition', icone: <MdFoodBank className="absolute top-4 right-4 text-purple-400 text-2xl"/> },
-    { id: 'plans', title: 'Offres', icone: <FaMoneyBillAlt className="absolute top-4 right-4 text-purple-400 text-2xl"/> },
-    { id: 'demo', title: 'Démo', icone: <MdCoPresent className="absolute top-4 right-4 text-purple-400 text-2xl"/> },
-  ];
-  const planDetails = [
-    { name: 'Free', price: 'Gratuit', concept1: '3 recettes/3 mois', concept2: '3 séances/3 mois' },
-    { name: 'Basic', price: '10€/mois', concept1: '100+ recettes', concept2: '20+ entraînements' },
-    { name: 'Premium', price: '49€/mois', concept1: 'Programme adapté', concept2: 'Coachs dédiés' },
-    { name: 'VIP', price: '79€/mois', concept1: 'Accès illimité', concept2: 'Communauté VIP' }
-  ];
+  // Fallback si pas de données
+  const sportItems = programs.filter((p) => p.type === "sport");
+  const nutrItems = programs.filter((p) => p.type === "nutrition");
+  const displaySport = sportItems.length
+    ? sportItems
+    : Array.from({ length: 4 }, (_, i) => ({
+        uuid: i,
+        name: `Sport ${i + 1}`,
+        description: "Séances adaptées à votre objectif.",
+      }));
+  const displayNutrition = nutrItems.length
+    ? nutrItems
+    : Array.from({ length: 4 }, (_, i) => ({
+        uuid: i,
+        name: `Nutrition ${i + 1}`,
+        description: "Plans selon votre régime.",
+      }));
 
   return (
     <Layout>
-      <div className="flex h-screen w-screen">
-        {/* Sidebar */}
-        <aside className="hidden md:flex">
-          <SideBar />
-        </aside>
+      {/* Header */}
+        <Header></Header>
 
-        {/* Main Content */}
-        <main className="flex-1 flex flex-col overflow-auto bg-gray-50">
+      <main className="bg-[var(--background)] text-[var(--text1)]">
+        {/* Hero */}
+        <section
+          id="hero"
+          className="relative h-screen flex items-center justify-center overflow-hidden"
+        >
+          {/* Image de fond */}
+          <div className="absolute inset-0 z-0">
+            <Image
+              src="/images/hero-bg.jpg"
+              alt="Hero background"
+              fill
+              className="object-cover object-center"
+              priority
+            />
+          </div>
+          {/* Dégradé principal */}
+          <div className="absolute inset-0 z-10 bg-gradient-to-br from-[var(--background)]/80 via-[var(--background)]/40 to-[var(--background)]" />
+          {/* Overlay sombre */}
+          <div className="absolute inset-0 z-20 bg-[var(--background)]/60" />
+          {/* Dégradé bas vers le fond */}
+          <div className="absolute bottom-0 left-0 w-full h-32 bg-gradient-to-b from-transparent to-[var(--background)] z-30" />
+          {/* Contenu texte */}
+          <div className="relative z-40 text-center px-4">
+            <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold mb-16 text-[var(--text1)]">
+              Développe ton plein potentiel
+            </h1>
+            <Button>Découvre ton programme personnalisé</Button>
+          </div>
+        </section>
 
-          {/* Hero Banner */}
-          <motion.section
-            className="h-[50vh] w-full flex py-10 items-center justify-center bg-gradient-to-r from-violet-600 via-purple-500 to-pink-400 text-white"
-            variants={fade} initial="hidden" animate="visible"
-          >
-            <div className="text-center px-4">
-              <h1 className="text-5xl font-extrabold mb-8">Atteins Tes Objectifs</h1>
-              <p className="text-lg">Coaching sportif et nutritionnel sur mesure</p>
-            </div>
-          </motion.section>
-
-          {!user && !authLoading && (
-            <div className="flex justify-center mt-8">
-              <button
-                className="bg-purple-600 text-white px-6 py-3 rounded-lg text-xl hover:bg-purple-700 transition"
-                onClick={() => router.push("/auth")} // ou "/login" selon ta route d'auth
-              >
-                Se connecter / S’inscrire
-              </button>
-            </div>
-          )}
-          
-          {/* Decorative Accent */}
-          <div className="h-4 bg-gradient-to-r from-purple-600 to-fuchsia-600" />
-
-          {/* Services Section */}
-          <motion.section id="services" className="py-12 px-6 bg-white" variants={fade} initial="hidden" animate="visible">
-            <div className="max-w-7xl mx-auto">
-              <h2 className="text-3xl font-bold text-gray-800 mb-8 text-center">Nos Services</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-                {services.map(s => (
-                  <motion.div
-                    key={s.id}
-                    className="relative bg-gray-100 rounded-2xl p-6 hover:bg-white hover:shadow-lg hover:cursor-help transition"
-                    whileHover={{ y: -4 }}
-                    onClick={() => {
-                         setSelectedService(s.id);
-                         setActiveTab(s.id);
-                       }}
-                    >
-                    {s.icone}
-                    <h3 className="text-xl font-semibold text-gray-800 mb-2">{s.title}</h3>
-                    <p className="text-gray-600">Clique pour découvrir</p>
-                  </motion.div>
-                ))}
-              </div>
-            </div>
-          </motion.section>
-
-          {/* Programmes Section */}
-          <section id="programs" className="py-12 px-6 bg-gray-50">
-            <div className="max-w-7xl mx-auto">
-              <div className="flex items-center justify-center mb-8">
-                <div className="h-1 w-12 bg-purple-600 mr-3"></div>
-                <h2 className="text-3xl font-bold text-gray-800">Programmes Phare</h2>
-                <div className="h-1 w-12 bg-purple-600 ml-3"></div>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-                {programs.map(p => <ProgramCard key={p.uuid} program={p} />)}
-              </div>
-            </div>
-          </section>
-
-          {/* Decorative Footer Accent */}
-          <div className="h-2 bg-gradient-to-r from-fuchsia-600 to-violet-600" />
-
-          {/* Footer */}
-          <footer id="contact" className="bg-white py-8 shadow-inner mb-8 md:mb-0">
-            <div className="max-w-7xl mx-auto px-6 text-center">
-              <p className="text-gray-600 mb-4">Tous droits réservés.</p>
-              <p className="text-gray-600 mb-4">@TheSmartWay</p>
-              
-            </div>
-          </footer>
-
-        </main>
-      </div>
-
-      {/* Mobile Navigation */}
-      <MobileNav />
-
-      {/* Modal */}
-      <AnimatePresence>
-        {selectedService && (
-          <>
-            <motion.div className="fixed inset-0 bg-black bg-opacity-40" variants={modalFade} initial="hidden" animate="visible" exit="exit" onClick={() => setSelectedService(null)} />
-            <motion.div className="fixed inset-0 flex flex-col bg-gradient-to-br from-violet-600 via-purple-400 to-fuchsia-400 text-white overflow-auto" variants={modalFade} initial="hidden" animate="visible" exit="exit" onClick={e => e.stopPropagation()}>
-              <div className="p-4 flex justify-end"><button onClick={() => setSelectedService(null)}><IoClose size={28} /></button></div>
-              <nav className="flex justify-center space-x-4 py-2 sticky top-0 bg-transparent">
-                {services.map(s => (
-                  <button key={s.id} onClick={() => setActiveTab(s.id)} className={`px-4 py-2 rounded-full transition ${activeTab===s.id?'bg-white text-purple-600':'bg-white/30 text-white hover:bg-white/50'}`}>{s.title}</button>
-                ))}
-              </nav>
-              <div className="flex-1 p-6">
-                {activeTab==='plans' && (
-                  <div className="grid grid-cols-2 grid-rows-2 gap-6 h-full">
-                    {planDetails.map(plan => (
-                      <div key={plan.name} className="bg-white/20 p-6 rounded-2xl flex flex-col justify-between shadow-md hover:bg-white/30">
-                        <div><h3 className="text-xl font-bold">{plan.name}</h3><p className="text-lg font-semibold mt-1">{plan.price}</p></div>
-                        <div className="mt-2 text-sm"><p>{plan.concept1}</p><p>{plan.concept2}</p></div>
-                        <button className="mt-4 py-2 bg-white/30 rounded-full text-white font-medium hover:bg-white/50">Choisir</button>
+        {/* Nos Programmes */}
+        <section id="programs" className="py-32 bg-[var(--background)]">
+          <div className="max-w-7xl mx-auto px-6 text-center">
+            <h2 className="text-4xl font-bold text-[var(--green1)] mb-12">
+              Nos Programmes
+            </h2>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+              {/* Sport */}
+              <div>
+                <h3 className="text-2xl font-semibold text-[var(--green2)] mb-6 text-center">
+                  Sport
+                </h3>
+                <div className="overflow-y-auto scrollbar-hide p-2">
+                  <div className="grid grid-cols-2 gap-6">
+                    {displaySport.map((p) => (
+                      <div
+                        key={p.uuid}
+                        className="p-1"
+                      >
+                        <CustomCard>
+                        <Image
+                          src="/images/muscles.webp"
+                          alt={p.name}
+                          width={300}
+                          height={150}
+                          className="object-cover w-full h-32 rounded-t-xl"
+                        />
+                        <div className="p-4">
+                          <h4 className="text-lg font-semibold text-center mb-1">
+                            {p.name}
+                          </h4>
+                          <p className="text-[var(--text2)] text-sm text-center">
+                            {p.description}
+                          </p>
+                        </div>
+                        </CustomCard>
                       </div>
                     ))}
                   </div>
-                )}
-                {/* TODO: sport, nutrition, demo */}
+                </div>
+                <div className="mt-6 text-center">
+                  <Button>Voir tous les programmes de sport</Button>
+                </div>
               </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+
+              {/* Nutrition */}
+              <div>
+                <h3 className="text-2xl font-semibold text-[var(--green2)] mb-6 text-center">
+                  Nutrition
+                </h3>
+                <div className="overflow-y-auto scrollbar-hide p-2">
+                  <div className="grid grid-cols-2 gap-6">
+                    {displayNutrition.map((p) => (
+                      <div key={p.uuid} className="p-1">
+                        <CustomCard>
+                        <Image
+                          src="/images/muscles.webp"
+                          alt={p.name}
+                          width={300}
+                          height={150}
+                          className="object-cover w-full h-32 rounded-t-xl"
+                        />
+                        <div className="p-4">
+                          <h4 className="text-lg font-semibold text-center mb-1">
+                            {p.name}
+                          </h4>
+                          <p className="text-[var(--text2)] text-sm text-center">
+                            {p.description}
+                          </p>
+                        </div>
+                        </CustomCard>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div className="mt-6 text-center">
+                  <Button>Voir tous les programmes de nutrition</Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Roadmaps */}
+        <section id="roadmap" className="py-32 bg-[var(--details-dark)]">
+          <div className="max-w-7xl mx-auto px-6 text-center">
+            <h2 className="text-4xl font-bold text-[var(--green1)] mb-12">
+              Roadmaps Nutrition & Muscles
+            </h2>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <div className="bg-gray-800 rounded-xl p-4 shadow-md">
+                {/* <RoadmapComponent variant="nutrition" /> */}
+                <Image
+                  src="/images/muscles.webp"
+                  alt="Nutrition Roadmap"
+                  width={600}
+                  height={300}
+                  className="rounded-xl object-cover w-full"
+                />
+              </div>
+              <div className="bg-gray-800 rounded-xl p-4 shadow-md">
+                {/* <RoadmapComponent variant="muscles" /> */}
+                <Image
+                  src="/images/muscles.webp"
+                  alt="Muscles Roadmap"
+                  width={600}
+                  height={300}
+                  className="rounded-xl object-cover w-full"
+                />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* E‑books */}
+        <section id="ebooks" className="py-32 bg-[var(--bakcground)]">
+          <div className="max-w-7xl mx-auto px-6 text-center">
+            <h2 className="text-4xl font-bold text-[var(--green1)] mb-12">
+              E‑books à Télécharger
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+              {[1, 2, 3, 4].map((i) => (
+                <CustomCard key={i} className="overflow-hidden">
+                  <Image
+                    src="/images/muscles.webp"
+                    alt={`E-book ${i}`}
+                    width={400}
+                    height={160}
+                    className="object-cover w-full h-32 rounded-t-xl"
+                  />
+                  <div className="p-4">
+                    <h3 className="text-xl font-semibold mb-2">E‑book {i}</h3>
+                    <p className="text-[var(--text1)] text-sm">
+                      Téléchargez notre guide complet.
+                    </p>
+                  </div>
+                </CustomCard>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Outils */}
+        <section id="outils" className="py-32 bg-[var(--details-dark)]">
+        <div className="max-w-6xl mx-auto px-6 text-center">
+          <h2 className="text-4xl font-bold text-[var(--green1)] mb-12">
+            Outils timer
+          </h2>
+
+          <ul className="grid grid-cols-1 sm:grid-cols-3 gap-y-12 gap-x-8">
+            {[
+              { key: "chronometer", label: "Chronomètre", desc: "Pour faire ton max bebew" },
+              { key: "timer",       label: "Workout timer", desc: "Pour des entraînements en fractionné" },
+              { key: "interval",    label: "Pomodoro timer", desc: "Pour travailler efficacement ma puce" },
+            ].map(({ key, label, desc }) => (
+              <li key={key} className="flex flex-col items-center">
+                <Button
+                  onClick={goToTimer(key)}
+                  className="text-lg font-medium text-[var(--background)] bg-[var(--green2)]
+                            py-2 px-6 rounded-full hover:bg-[var(--green3)] transition-colors"
+                >
+                  {label}
+                </Button>
+                <p className="mt-4 text-base text-[var(--text2)] leading-relaxed max-w-xs">
+                  {desc}
+                </p>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
+
+
+
+        {/* Footer */}
+        <footer className="bg-[var(--background)] py-12 text-[var(--text3)] border-t-1 border-[var(--details-dark)]">
+          <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-6 px-6">
+            <div>
+              <h4 className="font-semibold text-[var(--text1)] mb-2">À propos</h4>
+              <ul className="space-y-1">
+                <li>
+                  <a href="#" className="hover:underline">
+                    Qui sommes-nous ?
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:underline">
+                    Nos valeurs
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:underline">
+                    Carrières
+                  </a>
+                </li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-semibold text-[var(--text1)] mb-2">Services</h4>
+              <ul className="space-y-1">
+                <li>
+                  <button
+                    onClick={scrollTo("programs")}
+                    className="hover:underline"
+                  >
+                    Programmes
+                  </button>
+                </li>
+                <li>
+                  <button
+                    onClick={scrollTo("roadmap")}
+                    className="hover:underline"
+                  >
+                    Roadmap
+                  </button>
+                </li>
+                <li>
+                  <button
+                    onClick={scrollTo("ebooks")}
+                    className="hover:underline"
+                  >
+                    E‑books
+                  </button>
+                </li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-semibold text-[var(--text1)] mb-2">Ressources</h4>
+              <ul className="space-y-1">
+                <li>
+                  <button
+                    onClick={scrollTo("programs")}
+                    className="hover:underline"
+                  >
+                    Programmations
+                  </button>
+                </li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-semibold text-[var(--text1)] mb-2">Contact</h4>
+              <ul className="space-y-1">
+                <li>
+                  <a href="mailto:contact@monsite.com" className="hover:underline">
+                    Email
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:underline">
+                    Support
+                  </a>
+                </li>
+                <li>
+                  <a href="#" className="hover:underline">
+                    FAQ
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </footer>
+      </main>
     </Layout>
   );
 }

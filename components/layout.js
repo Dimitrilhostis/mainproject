@@ -1,10 +1,12 @@
-// components/layout.jsx
-"use client";
-
-
-import useAutoLogout from "@/hooks/use_auth_logout";
+import { useEffect, useState } from 'react';
 
 export default function Layout({ children }) {
-  useAutoLogout(15 * 60 * 1000); // 15 min
-  return <>{children}</>;
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
+  return (
+    <div className="min-h-screen transition-colors duration-300">
+      {children}
+    </div>
+  );
 }

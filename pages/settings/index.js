@@ -1,82 +1,65 @@
-// pages/settings.jsx
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 import Layout from "@/components/layout";
-import SideBar from "@/components/nav/sidebar";
 import Loader from "@/components/loader";
 import MobileNav from "@/components/nav/mobile_nav";
 import { useAuth } from "@/contexts/auth_context";
 import { supabase } from "@/lib/supabaseClient";
 import { RiDeleteBinLine } from "react-icons/ri";
 import { IoPersonAddOutline } from "react-icons/io5";
-import ProfileSection from "@/components/settings/profile";
-
+import { motion } from "framer-motion";
 
 export default function SettingsPage() {
   const router = useRouter();
   const { user, signOut, loading: authLoading } = useAuth();
-
-  // Auth guard
-  useEffect(() => {
-    if (!authLoading && !user) router.replace("/login?from=settings");
-  }, [authLoading, user, router]);
-
-  // onglets
-  const TABS = [
-    { key: "stats",     label: "Statistiques" },
-    { key: "notif",     label: "Notifications"},
-    { key: "friends",   label: "Relations"    },
-    { key: "security",  label: "Sécurité"     },
-    { key: "account",   label: "Compte"       },
-  ];
-  const [active, setActive] = useState("stats");
-
-  // chargement global / données
+  const [activeTab, setActiveTab] = useState("stats");
   const [loading, setLoading] = useState(true);
 
-  // Profil
-  const [email, setEmail] = useState("");
-
-  const [password, setPassword] = useState("hidden")
-
-  // Stats
+  // Stats counts
   const [nutCount, setNutCount] = useState(0);
   const [sportCount, setSportCount] = useState(0);
 
   // Notifications
-  const [notif, setNotif] = useState({
+  const [notifications, setNotifications] = useState({
     workoutReminder: true,
     nutritionAlerts: true,
     newsletter: false,
   });
 
-  // Relations
+  // Friends
   const [friends, setFriends] = useState(["Alice", "Bob"]);
   const [newFriend, setNewFriend] = useState("");
 
-  // load initial
+  // Redirect if not authed
+  useEffect(() => {
+    if (!authLoading && !user) router.replace("/login?from=settings");
+  }, [authLoading, user]);
+
+  // Load data
   useEffect(() => {
     if (authLoading || !user) return;
     (async () => {
       setLoading(true);
-      setEmail(user.email);
+      setNotifications(notifications);
       const { count: n } = await supabase
         .from("personal_nutrition_plans")
-        .select("id", { count: "exact", head: true });
+        .select("id", { head: true, count: "exact" });
       const { count: s } = await supabase
         .from("personal_sport_plans")
-        .select("id", { count: "exact", head: true });
+        .select("id", { head: true, count: "exact" });
       setNutCount(n || 0);
       setSportCount(s || 0);
       setLoading(false);
     })();
   }, [authLoading, user]);
 
-  const toggleNotif = (k) =>
-    setNotif((n) => ({ ...n, [k]: !n[k] }));
+  // Toggle notifications
+  const toggleNotification = key =>
+    setNotifications(n => ({ ...n, [key]: !n[key] }));
 
+  // Friends handlers
   const addFriend = () => {
     const f = newFriend.trim();
     if (f && !friends.includes(f)) {
@@ -84,14 +67,21 @@ export default function SettingsPage() {
       setNewFriend("");
     }
   };
-  const removeFriend = (f) =>
-    setFriends((list) => list.filter((x) => x !== f));
+  const removeFriend = f => setFriends(list => list.filter(x => x !== f));
 
+  // Tabs config
+  const TABS = [
+    { key: "stats", label: "Statistiques" },
+    { key: "notif", label: "Notifications" },
+    { key: "friends", label: "Relations" },
+    { key: "security", label: "Sécurité" },
+    { key: "account", label: "Compte" },
+  ];
 
-  if (authLoading || loading || !user) {
+  if (authLoading || loading) {
     return (
       <Layout>
-        <div className="flex-1 flex items-center justify-center">
+        <div className="flex items-center justify-center h-screen w-screen bg-[var(--background)]">
           <Loader />
         </div>
       </Layout>
@@ -100,133 +90,153 @@ export default function SettingsPage() {
 
   return (
     <Layout>
-      <div className="flex w-full min-h-screen bg-gray-50 dark:bg-gray-900">
-        <aside className="hidden md:flex">
-          <SideBar />
-        </aside>
-        <div className="flex-1 p-6 md:p-8">
-          <h1 className="text-3xl font-bold mb-4">Paramètres</h1>
+      <main className="w-screen h-screen relative overflow-hidden">
+        {/* Background */}
+        <div
+          className="absolute inset-0 bg-cover bg-center"
+          style={{ backgroundImage: "url('/images/hero-bg.jpg')" }}
+        />
+        <div className="absolute inset-0 bg-[var(--background)]/80" />
+
+        {/* Content Card */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="relative z-10 max-w-4xl mx-auto my-12 bg-transparent backdrop-blur-2xl border border-[var(--text3)]/30 rounded-3xl p-8 flex flex-col"
+        >
+          <h1 className="text-4xl font-extrabold text-[var(--text1)] mb-6">
+            Paramètres
+          </h1>
 
           {/* Tabs */}
-          <nav className="border-b border-gray-200 dark:border-gray-700 mb-6 overflow-x-auto">
+          <nav className="mb-6 overflow-x-auto">
             <ul className="flex space-x-4">
-              {TABS.map(({ key, label }) => (
-                <li key={key}>
+              {TABS.map(tab => (
+                <li key={tab.key}>
                   <button
-                    onClick={() => setActive(key)}
-                    className={`pb-2 px-1 text-sm font-medium transition 
-                      ${active === key
-                        ? "border-b-2 border-indigo-600 text-indigo-600"
-                        : "text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white"
-                      }`}
+                    onClick={() => setActiveTab(tab.key)}
+                    className={`px-3 pb-1 text-lg font-medium transition \$
+                      {activeTab === tab.key
+                        ? 'border-b-2 border-[var(--green2)] text-[var(--green2)]'
+                        : 'text-[var(--text2)] hover:text-[var(--text1)]'}
+                    `}
                   >
-                    {label}
+                    {tab.label}
                   </button>
                 </li>
               ))}
             </ul>
           </nav>
 
-          {/* Content */}
-          <div className="w-full mx-auto space-y-6">
-
-            {active === "stats" && (
-              <section className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow text-center">
-                  <p className="text-4xl font-bold">{nutCount}</p>
-                  <p>Plans nutritionnels</p>
+          {/* Tab Content */}
+          <div className="space-y-8">
+            {activeTab === 'stats' && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div className="p-6 rounded-xl bg-[var(--light-dark)] text-center">
+                  <p className="text-5xl font-bold text-[var(--green2)]">{nutCount}</p>
+                  <p className="text-[var(--text2)]">Plans nutritionnels</p>
                 </div>
-                <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow text-center">
-                  <p className="text-4xl font-bold">{sportCount}</p>
-                  <p>Programmes sportifs</p>
+                <div className="p-6 rounded-xl bg-[var(--light-dark)] text-center">
+                  <p className="text-5xl font-bold text-[var(--green2)]">{sportCount}</p>
+                  <p className="text-[var(--text2)]">Programmes sportifs</p>
                 </div>
-              </section>
+              </div>
             )}
 
-            {active === "notif" && (
-              <section className="space-y-4 max-w-md mx-auto">
-                {Object.entries(notif).map(([k, v]) => (
+            {activeTab === 'notif' && (
+              <div className="grid grid-cols-1 gap-4">
+                {Object.entries(notifications).map(([key, val]) => (
                   <label
-                    key={k}
-                    className="flex items-center justify-between bg-white dark:bg-gray-800 p-4 rounded-lg shadow"
+                    key={key}
+                    className="flex items-center justify-between p-4 bg-[var(--light-dark)] rounded-xl"
                   >
-                    <span className="capitalize text-gray-700 dark:text-gray-300">
-                      {k === "workoutReminder"
-                        ? "Rappels d’entraînements"
-                        : k === "nutritionAlerts"
-                        ? "Alertes nutritionnelles"
-                        : "Newsletter mensuelle"}
+                    <span className="capitalize text-[var(--text1)]">
+                      {key === 'workoutReminder'
+                        ? 'Rappels d’entraînements'
+                        : key === 'nutritionAlerts'
+                        ? 'Alertes nutritionnelles'
+                        : 'Newsletter mensuelle'}
                     </span>
                     <input
                       type="checkbox"
-                      checked={v}
-                      onChange={() => toggleNotif(k)}
-                      className="h-5 w-5 text-indigo-600"
+                      checked={val}
+                      onChange={() => toggleNotification(key)}
+                      className="h-6 w-6 accent-[var(--green2)]"
                     />
                   </label>
                 ))}
-              </section>
+              </div>
             )}
 
-            {active === "friends" && (
-              <section className="w-full grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mt-10">
-                {[
-                  { title: "Mes Amis", type: "friends" },
-                  { title: "Following", type: "following" },
-                  { title: "Followers", type: "followers" },
-                ].map(({ title, type }) => (
-                  <div key={type} className="p-5 rounded-2xl bg-gray-200 flex flex-col">
-                    <h2 className="text-xl font-semibold mb-4">{title}</h2>
-                    <ul className="space-y-2 overflow-auto flex-1">
-                      {friends.map((f) => (
-                        <li
-                          key={f}
-                          className="flex justify-between items-center bg-white p-3 rounded shadow"
-                        >
-                          <span>{f}</span>
-                          <div className="flex gap-2">
-                            {(type === "following" || type === "followers") && (
-                              <button
-                                onClick={() => addFriend(f)}
-                                className="text-blue-600 hover:text-blue-400"
-                              >
-                                <IoPersonAddOutline className="text-xl" />
-                              </button>
-                            )}
+            {activeTab === 'friends' && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {['Mes Amis', 'Following', 'Followers'].map(title => (
+                  <div key={title} className="p-4 bg-[var(--light-dark)] rounded-xl">
+                    <h2 className="text-xl font-semibold text-[var(--text1)] mb-4">{title}</h2>
+                    <ul className="space-y-2 max-h-48 overflow-auto">
+                      {friends.map(f => (
+                        <li key={f} className="flex justify-between items-center">
+                          <span className="text-[var(--text2)]">{f}</span>
+                          <div className="flex space-x-2">
+                            <button
+                              onClick={addFriend}
+                              className="text-[var(--green2)] hover:text-[var(--green3)]"
+                            >
+                              <IoPersonAddOutline size={20} />
+                            </button>
                             <button
                               onClick={() => removeFriend(f)}
-                              className="text-red-600 hover:text-red-400"
+                              className="text-red-500 hover:text-red-400"
                             >
-                              <RiDeleteBinLine className="text-xl" />
+                              <RiDeleteBinLine size={20} />
                             </button>
                           </div>
                         </li>
                       ))}
                     </ul>
+                    <div className="mt-4 flex">
+                      <input
+                        type="text"
+                        value={newFriend}
+                        onChange={e => setNewFriend(e.target.value)}
+                        placeholder="Ajouter un ami"
+                        className="flex-1 px-3 py-2 rounded-l-lg bg-[var(--background)] text-[var(--text1)] placeholder-[var(--text2)]"
+                      />
+                      <button
+                        onClick={addFriend}
+                        className="px-4 bg-[var(--green2)] text-[var(--background)] rounded-r-lg hover:bg-[var(--green3)] transition"
+                      >
+                        +
+                      </button>
+                    </div>
                   </div>
                 ))}
-              </section>
+              </div>
             )}
 
-
-            {active === "security" && (
-              <section className="max-w-md mx-auto bg-white p-6 rounded-lg shadow space-y-4">
-              </section>
+            {activeTab === 'security' && (
+              <div className="p-6 bg-[var(--light-dark)] rounded-xl text-[var(--text1)] text-center">
+                Section Sécurité à venir
+              </div>
             )}
 
-            {active === "account" && (
-              <ProfileSection 
-              user={user}
-              signOut={signOut}
-              friends={friends}
-              addFriend={addFriend}
-              removeFriend={removeFriend}
-            />
+            {activeTab === 'account' && (
+              <div className="p-6 bg-[var(--light-dark)] rounded-xl space-y-4">
+                <p className="text-[var(--text1)]">Email : {user.email}</p>
+                <button
+                  onClick={signOut}
+                  className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
+                >
+                  Se déconnecter
+                </button>
+              </div>
             )}
           </div>
-        </div>
+        </motion.div>
+
         <MobileNav />
-      </div>
+      </main>
     </Layout>
   );
 }
