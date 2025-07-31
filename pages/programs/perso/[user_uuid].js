@@ -2,7 +2,6 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Layout from '@/components/layout';
-import MobileNav from '@/components/nav/mobile_nav';
 import { useAuth } from '@/contexts/auth_context';
 import { supabase } from '@/lib/supabaseClient';
 import NutritionCard from '@/components/cards/card_nutrition';
@@ -101,7 +100,6 @@ export default function UserProgramsPage() {
           )}
         </section>
       </div>
-      <MobileNav />
     </Layout>
   );
 }
