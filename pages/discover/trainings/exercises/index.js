@@ -5,7 +5,6 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import Layout from "@/components/layout";
-import MobileNav from "@/components/nav/mobile_nav";
 import Loader from "@/components/loader";
 import { ExercisesCard } from "@/components/cards/discover_cards";
 import { FaDumbbell } from "react-icons/fa";
@@ -72,7 +71,6 @@ export default function ExercisesPage() {
             ))}
           </div>
 
-          <MobileNav />
         </main>
       </div>
     </Layout>

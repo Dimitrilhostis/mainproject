@@ -4,7 +4,6 @@ import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/router";
 import { supabase } from "@/lib/supabaseClient";
 import Layout from "@/components/layout";
-import MobileNav from "@/components/nav/mobile_nav";
 import Loader from "@/components/loader";
 import { useAuth } from "@/contexts/auth_context";
 import { motion, AnimatePresence } from "framer-motion";
@@ -141,10 +140,6 @@ export default function DiscoverPage() {
             </footer>
           </div>
 
-          {/* MobileNav sticky en bas */}
-          <div className="fixed left-0 right-0 bottom-0 z-40 lg:hidden">
-            <MobileNav />
-          </div>
 
           {/* Drawer Filtres */}
           <AnimatePresence>

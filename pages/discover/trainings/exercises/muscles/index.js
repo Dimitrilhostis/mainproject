@@ -5,7 +5,6 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import Layout from "@/components/layout";
-import MobileNav from "@/components/nav/mobile_nav";
 import Loader from "@/components/loader";
 import { MuscleCard } from "@/components/cards/discover_cards";
 import { FaArrowLeft, FaDumbbell } from "react-icons/fa";
@@ -65,7 +64,6 @@ export default function MusclesPage() {
             ))}
           </div>
 
-          <MobileNav />
         </main>
       </div>
     </Layout>

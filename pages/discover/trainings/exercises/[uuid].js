@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import Layout from "@/components/layout";
-import MobileNav from "@/components/nav/mobile_nav";
 import Loader from "@/components/loader";
 import Image from "next/image";
 import { supabase } from "@/lib/supabaseClient";
@@ -199,7 +198,6 @@ export default function ExercisePage() {
         {/* Marge bas équivalente au bandeau */}
         <div style={{ marginBottom: BANNER_MARGIN }} />
 
-        <MobileNav />
       </div>
     </Layout>
   );
