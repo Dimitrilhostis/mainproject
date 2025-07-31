@@ -1,53 +1,27 @@
 'use client';
+
 import PropTypes from 'prop-types';
 import { useRouter } from 'next/router';
-import BackButton from '../buttons/back_button';
-import useAuth from '@/hooks/use_auth';
-import { useEffect } from 'react';
-import { useState } from 'react';
-import { supabase } from '@/lib/supabaseClient';
+import { motion } from 'framer-motion';
+import { fadeVariants } from './card_variant';
 
 export default function NutritionProfileCard({ item }) {
-
-  const { user: authUser, loading: authLoading } = useAuth();
   const router = useRouter();
-  const { user_uuid } = router.query;
-  const [loading, setLoading] = useState(true);
-
-
-  useEffect(() => {
-      if (authLoading || !user_uuid) return;
-      (async () => {
-        setLoading(true);
-        const { data: nutData, error: nutError } = await supabase
-          .from('nutrition_profiles')
-          .select('*')
-          .eq('user_id', user_uuid)
-          .limit(1);
-        const { data: sportData, error: sportError } = await supabase
-          .from('sport_profiles')
-          .select('*')
-          .eq('user_id', user_uuid)
-          .limit(1);
-        if (nutError) console.error('Erreur nutrition_profiles:', nutError.message);
-        if (sportError) console.error('Erreur sport_profiles:', sportError.message);
-        setLoading(false);
-      })();
-    }, [authLoading, user_uuid]);
-
-  const viewHref = `/admin/programs/${item.user_id}`;
-  const displayEmail = authUser?.email;
+  const handleClick = () => router.push(`/programs/perso/${item.user_id}`);
 
   return (
-    <div>
-      <div
-        className="bg-white rounded-t-lg shadow p-4 flex flex-col cursor-pointer"
-        onClick={() => router.push(viewHref)}
-      >
-        <h3 className="font-bold text-lg mb-2">Profile for : {displayEmail}</h3>
-        <p className="text-sm text-gray-600 line-clamp-3">Needs: {item.needs}</p>
-      </div>
-    </div>
+    <motion.div
+      className="bg-[var(--light-dark)] rounded-2xl shadow-lg p-6 flex flex-col cursor-pointer hover:shadow-xl transition"
+      variants={fadeVariants}
+      initial="hidden"
+      animate="visible"
+      whileHover={{ scale: 1.02 }}
+      onClick={handleClick}
+    >
+      <h3 className="text-lg font-semibold text-[var(--green2)] mb-2">Mon programme Nutrition</h3>
+      <p className="text-[var(--text2)] line-clamp-4 mb-4">{item.needs || 'Pas encore de profil nutrition.'}</p>
+      <span className="mt-auto text-sm text-[var(--text3)]">Voir le détail</span>
+    </motion.div>
   );
 }
 
@@ -55,6 +29,5 @@ NutritionProfileCard.propTypes = {
   item: PropTypes.shape({
     user_id: PropTypes.string.isRequired,
     needs: PropTypes.string,
-    uuid: PropTypes.string.isRequired,
   }).isRequired,
 };

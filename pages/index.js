@@ -75,7 +75,7 @@ export default function HomePage() {
           <div className="absolute inset-0 z-20 bg-[var(--background)]/60" />
           <div className="relative z-30 text-center px-4">
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold mb-16 text-[var(--text1)]">Développe ton plein potentiel</h1>
-            <Button onClick={scrollTo("programs")}>Voir nos programmes</Button>
+            <Button onClick={scrollTo("programs")}>Découvre ton programme personnalisé</Button>
           </div>
         </section>
 
