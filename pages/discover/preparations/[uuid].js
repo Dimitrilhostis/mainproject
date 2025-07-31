@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import Layout from "@/components/layout";
-import MobileNav from "@/components/nav/mobile_nav";
 import Loader from "@/components/loader";
 import { supabase } from "@/lib/supabaseClient";
 import Link from "next/link";
@@ -251,7 +250,6 @@ export default function PreparationPage() {
           )}
         </div>
 
-        <MobileNav />
       </div>
     </Layout>
   );
