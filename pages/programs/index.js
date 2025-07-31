@@ -23,7 +23,7 @@ export default function ProgramsPage() {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
 
-  // State hooks (always called in same order)
+  // Hooks (always same order)
   const [nutritionProfile, setNutritionProfile] = useState(null);
   const [sportProfile, setSportProfile] = useState(null);
   const [likedPrograms, setLikedPrograms] = useState([]);
@@ -36,26 +36,15 @@ export default function ProgramsPage() {
   const [filterDuration, setFilterDuration] = useState('all');
   const [filterCertified, setFilterCertified] = useState(false);
 
-  // Load user profiles
+  // Load user personal profiles
   useEffect(() => {
     if (!user) return;
     (async () => {
-      const userId = user.id;
-      const { data: nut, error: nutError } = await supabase
-        .from('nutrition_profiles')
-        .select('*')
-        .eq('user_id', userId)
-        .maybeSingle();
-      if (nutError) console.error('Nutrition fetch error:', nutError.message);
-      setNutritionProfile(nut || null);
-
-      const { data: sport, error: sportError } = await supabase
-        .from('sport_profiles')
-        .select('*')
-        .eq('user_id', userId)
-        .maybeSingle();
-      if (sportError) console.error('Sport fetch error:', sportError.message);
-      setSportProfile(sport || null);
+      const id = user.id;
+      const { data: nut } = await supabase.from('nutrition_profiles').select('*').eq('user_id', id).maybeSingle();
+      setNutritionProfile(nut);
+      const { data: sport } = await supabase.from('sport_profiles').select('*').eq('user_id', id).maybeSingle();
+      setSportProfile(sport);
     })();
   }, [user]);
 
@@ -63,158 +52,109 @@ export default function ProgramsPage() {
   useEffect(() => {
     if (!user) return;
     (async () => {
-      const userId = user.id;
-      const { data, error } = await supabase
-        .from('liked_programs')
-        .select('program(*)')
-        .eq('user_id', userId);
-      if (error) {
-        console.error('Liked programs fetch error:', error.message);
-        setLikedPrograms([]);
-      } else {
-        setLikedPrograms(data.map(r => r.program).filter(p => p && p.uuid));
-      }
+      const id = user.id;
+      const { data } = await supabase.from('liked_programs').select('program(*)').eq('user_id', id);
+      setLikedPrograms(data.map(r => r.program).filter(p => p && p.uuid));
     })();
   }, [user]);
 
-  // Discover pagination loader
+  // Discover pagination/load
   const loadMore = useCallback(async () => {
     setLoadingDiscover(true);
-    const { data, error } = await supabase
-      .from('programs')
+    const { data } = await supabase.from('programs')
       .select('uuid, title, short_description, image, duration_weeks, difficulty_rating, is_published')
       .order('created_at', { ascending: false })
       .range((page - 1) * 20, page * 20 - 1);
-    if (error) {
-      console.error('Discover fetch error:', error.message);
-    } else {
-      setPrograms(prev => [...prev, ...(data || [])]);
-    }
+    setPrograms(prev => [...prev, ...(data || [])]);
     setLoadingDiscover(false);
   }, [page]);
-
   useEffect(() => { loadMore(); }, [loadMore]);
 
-  // Infinite scroll observer
+  // Infinite scroll
   useEffect(() => {
-    const observer = new IntersectionObserver(entries => {
-      if (entries[0].isIntersecting) setPage(p => p + 1);
-    });
-    if (loaderRef.current) observer.observe(loaderRef.current);
-    return () => observer.disconnect();
+    const obs = new IntersectionObserver(([e]) => e.isIntersecting && setPage(p => p + 1));
+    if (loaderRef.current) obs.observe(loaderRef.current);
+    return () => obs.disconnect();
   }, []);
 
-  // Filtered discover list
+  // Filter discover
   const filtered = useMemo(() => programs.filter(p => {
-    if (!p) return false;
-    const ms = p.title.toLowerCase().includes(search.toLowerCase());
-    const md = filterDifficulty === 'all' || Math.round(p.difficulty_rating).toString() === filterDifficulty;
-    const du = filterDuration === 'all' ||
+    const matchSearch = p.title.toLowerCase().includes(search.toLowerCase());
+    const matchDiff = filterDifficulty === 'all' || Math.round(p.difficulty_rating).toString() === filterDifficulty;
+    const matchDur = filterDuration === 'all' ||
       (filterDuration === 'short' && p.duration_weeks < 4) ||
       (filterDuration === 'medium' && p.duration_weeks >= 4 && p.duration_weeks <= 8) ||
       (filterDuration === 'long' && p.duration_weeks > 8);
-    const mc = !filterCertified || p.is_published;
-    return ms && md && du && mc;
+    const matchCert = !filterCertified || p.is_published;
+    return matchSearch && matchDiff && matchDur && matchCert;
   }), [programs, search, filterDifficulty, filterDuration, filterCertified]);
 
-  // Authentication guard after hooks
-  if (authLoading) {
-    return (
-      <Layout>
-        <Loader />
-      </Layout>
-    );
-  }
-  if (!user) {
-    router.replace(`/login?from=${router.pathname}`);
-    return null;
-  }
+  // Auth guard
+  if (authLoading || !user) return (<Layout><Loader /></Layout>);
 
-  // Main render
+  // Determine link for personal program
+  const hasPersonal = nutritionProfile || sportProfile;
+  const personalLink = hasPersonal ? `/programs/perso/${user.id}` : `/programs/perso/form`;
+
   return (
     <Layout>
       <Header />
       <main className="relative w-screen min-h-screen bg-[var(--background)] text-[var(--text1)] pt-24 pb-24">
 
-        {/* Mon programme - 2 cartes */}
+        {/* Top: two blocks */}
         <section className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
-          <Link href={`/programs/perso/${user.id}`}>
-            <a className="block bg-[var(--light-dark)] p-6 rounded-lg hover:shadow-lg transition">
-              {nutritionProfile ? (
-                <>
-                  <h3 className="text-xl font-semibold text-[var(--green2)] mb-4">Mon programme Nutrition</h3>
-                  <NutritionCard item={nutritionProfile} />
-                </>
+          {/* Block 1: Personal program */}
+          <Link href={personalLink}>
+            <a className="block bg-[var(--light-dark)] p-8 rounded-2xl hover:shadow-xl transition">
+              <h3 className="text-2xl font-bold text-[var(--green2)] mb-4">Mon Programme</h3>
+              {hasPersonal ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {nutritionProfile && <NutritionCard item={nutritionProfile} />}
+                  {sportProfile && <SportCard item={sportProfile} />}
+                </div>
               ) : (
-                <>
-                  <h3 className="text-xl font-semibold text-[var(--green2)] mb-2">Commencer Nutrition</h3>
-                  <p className="text-[var(--text2)]">Crée ton profil pour générer un programme nutrition personnalisé.</p>
-                </>
+                <p className="text-[var(--text2)]">Créer mon programme perso</p>
               )}
             </a>
           </Link>
-          <Link href={`/programs/perso/${user.id}`}>
-            <a className="block bg-[var(--light-dark)] p-6 rounded-lg hover:shadow-lg transition">
-              {sportProfile ? (
-                <>
-                  <h3 className="text-xl font-semibold text-[var(--green2)] mb-4">Mon programme Sport</h3>
-                  <SportCard item={sportProfile} />
-                </>
-              ) : (
-                <>
-                  <h3 className="text-xl font-semibold text-[var(--green2)] mb-2">Commencer Sport</h3>
-                  <p className="text-[var(--text2)]">Crée ton profil pour générer un programme sport personnalisé.</p>
-                </>
-              )}
-            </a>
-          </Link>
-        </section>
 
-        {/* Mes programmes likés */}
-        <section className="max-w-7xl mx-auto px-6 mb-12">
-          <h2 className="text-2xl font-semibold text-[var(--green2)] mb-4">Mes programmes likés</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {likedPrograms.map(p => <ProgramCard key={p.uuid} program={p} />)}
+          {/* Block 2: Liked programs */}
+          <div>
+            <h3 className="text-2xl font-bold text-[var(--green2)] mb-4">Mes Programmes Likés</h3>
+            {likedPrograms.length ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {likedPrograms.map(p => <ProgramCard key={p.uuid} program={p} />)}
+              </div>
+            ) : (
+              <p className="text-[var(--text2)]">Aucun programme liké pour le moment.</p>
+            )}
           </div>
         </section>
 
-        {/* Découvrir */}
+        {/* Bottom: Discover list */}
         <section className="mt-8 px-6">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex flex-col sm:flex-row items-center justify-between mb-6 space-y-4 sm:space-y-0">
             <input
               type="text"
-              placeholder="Rechercher..."
+              placeholder="Rechercher des programmes..."
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className="px-3 py-2 bg-[var(--light-dark)] rounded-lg focus:outline-none"
+              className="px-4 py-2 bg-[var(--light-dark)] rounded-lg w-full sm:w-1/3 focus:outline-none"
             />
-            <div className="flex items-center space-x-4">
-              <select
-                value={filterDifficulty}
-                onChange={e => setFilterDifficulty(e.target.value)}
-                className="px-2 py-1 bg-[var(--light-dark)] rounded"
-              >
+            <div className="flex space-x-4">
+              <select value={filterDifficulty} onChange={e => setFilterDifficulty(e.target.value)} className="px-3 py-2 bg-[var(--light-dark)] rounded-lg">
                 <option value="all">Toutes difficultés</option>
                 {[1,2,3,4,5].map(i => <option key={i} value={i}>{i}★</option>)}
               </select>
-              <select
-                value={filterDuration}
-                onChange={e => setFilterDuration(e.target.value)}
-                className="px-2 py-1 bg-[var(--light-dark)] rounded"
-              >
+              <select value={filterDuration} onChange={e => setFilterDuration(e.target.value)} className="px-3 py-2 bg-[var(--light-dark)] rounded-lg">
                 <option value="all">Toutes durées</option>
-                <option value="short">&#60;4 sem.</option>
+                <option value="short">&lt;4 sem.</option>
                 <option value="medium">4-8 sem.</option>
-                <option value="long">&#62;8 sem.</option>
+                <option value="long">&gt;8 sem.</option>
               </select>
-              <label className="flex items-center">
-                <input
-                  type="checkbox"
-                  checked={filterCertified}
-                  onChange={() => setFilterCertified(!filterCertified)}
-                  className="mr-2"
-                />
-                Certifiés
+              <label className="flex items-center space-x-2">
+                <input type="checkbox" checked={filterCertified} onChange={() => setFilterCertified(!filterCertified)} className="h-4 w-4" />
+                <span>Certifiés</span>
               </label>
             </div>
           </div>
