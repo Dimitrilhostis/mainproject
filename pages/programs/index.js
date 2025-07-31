@@ -23,7 +23,7 @@ export default function ProgramsPage() {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
 
-  // Hooks (always same order)
+  // Hooks in fixed order
   const [nutritionProfile, setNutritionProfile] = useState(null);
   const [sportProfile, setSportProfile] = useState(null);
   const [likedPrograms, setLikedPrograms] = useState([]);
@@ -36,7 +36,7 @@ export default function ProgramsPage() {
   const [filterDuration, setFilterDuration] = useState('all');
   const [filterCertified, setFilterCertified] = useState(false);
 
-  // Load user personal profiles
+  // Load personal profiles
   useEffect(() => {
     if (!user) return;
     (async () => {
@@ -48,17 +48,17 @@ export default function ProgramsPage() {
     })();
   }, [user]);
 
-  // Load liked programs
+  // Load liked
   useEffect(() => {
     if (!user) return;
     (async () => {
       const id = user.id;
       const { data } = await supabase.from('liked_programs').select('program(*)').eq('user_id', id);
-      setLikedPrograms(data.map(r => r.program).filter(p => p && p.uuid));
+      setLikedPrograms(data.map(r => r.program).filter(p => p?.uuid));
     })();
   }, [user]);
 
-  // Discover pagination/load
+  // Discover loader
   const loadMore = useCallback(async () => {
     setLoadingDiscover(true);
     const { data } = await supabase.from('programs')
@@ -77,52 +77,52 @@ export default function ProgramsPage() {
     return () => obs.disconnect();
   }, []);
 
-  // Filter discover
+  // Filter
   const filtered = useMemo(() => programs.filter(p => {
-    const matchSearch = p.title.toLowerCase().includes(search.toLowerCase());
-    const matchDiff = filterDifficulty === 'all' || Math.round(p.difficulty_rating).toString() === filterDifficulty;
-    const matchDur = filterDuration === 'all' ||
+    const ms = p.title.toLowerCase().includes(search.toLowerCase());
+    const md = filterDifficulty === 'all' || Math.round(p.difficulty_rating).toString() === filterDifficulty;
+    const du = filterDuration === 'all' ||
       (filterDuration === 'short' && p.duration_weeks < 4) ||
       (filterDuration === 'medium' && p.duration_weeks >= 4 && p.duration_weeks <= 8) ||
       (filterDuration === 'long' && p.duration_weeks > 8);
-    const matchCert = !filterCertified || p.is_published;
-    return matchSearch && matchDiff && matchDur && matchCert;
+    const mc = !filterCertified || p.is_published;
+    return ms && md && du && mc;
   }), [programs, search, filterDifficulty, filterDuration, filterCertified]);
 
   // Auth guard
   if (authLoading || !user) return (<Layout><Loader /></Layout>);
 
-  // Determine link for personal program
+  // personal link
   const hasPersonal = nutritionProfile || sportProfile;
   const personalLink = hasPersonal ? `/programs/perso/${user.id}` : `/programs/perso/form`;
 
   return (
     <Layout>
       <Header />
-      <main className="relative w-screen min-h-screen bg-[var(--background)] text-[var(--text1)] pt-24 pb-24">
+      <main className="relative w-full overflow-x-hidden min-h-screen bg-[var(--background)] text-[var(--text1)] pt-24 pb-24">
 
-        {/* Top: two blocks */}
-        <section className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
-          {/* Block 1: Personal program */}
+        {/* Top: two blocks, highlight personal */}
+        <section className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+          {/* Personal block larger, ring highlight */}
           <Link href={personalLink}>
-            <a className="block bg-[var(--light-dark)] p-8 rounded-2xl hover:shadow-xl transition">
-              <h3 className="text-2xl font-bold text-[var(--green2)] mb-4">Mon Programme</h3>
+            <a className="block bg-[var(--light-dark)] p-10 rounded-3xl hover:shadow-2xl transition ring-4 ring-[var(--green2)]">
+              <h3 className="text-3xl font-extrabold text-[var(--green2)] mb-6">Mon Programme</h3>
               {hasPersonal ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   {nutritionProfile && <NutritionCard item={nutritionProfile} />}
                   {sportProfile && <SportCard item={sportProfile} />}
                 </div>
               ) : (
-                <p className="text-[var(--text2)]">Créer mon programme perso</p>
+                <p className="text-lg text-[var(--text2)]">Créer mon programme personnalisé</p>
               )}
             </a>
           </Link>
 
-          {/* Block 2: Liked programs */}
-          <div>
+          {/* Liked block */}
+          <div className="bg-[var(--light-dark)] p-8 rounded-3xl">
             <h3 className="text-2xl font-bold text-[var(--green2)] mb-4">Mes Programmes Likés</h3>
             {likedPrograms.length ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {likedPrograms.map(p => <ProgramCard key={p.uuid} program={p} />)}
               </div>
             ) : (
@@ -131,7 +131,7 @@ export default function ProgramsPage() {
           </div>
         </section>
 
-        {/* Bottom: Discover list */}
+        {/* Bottom: Discover, compact cards */}
         <section className="mt-8 px-6">
           <div className="flex flex-col sm:flex-row items-center justify-between mb-6 space-y-4 sm:space-y-0">
             <input
@@ -141,7 +141,7 @@ export default function ProgramsPage() {
               onChange={e => setSearch(e.target.value)}
               className="px-4 py-2 bg-[var(--light-dark)] rounded-lg w-full sm:w-1/3 focus:outline-none"
             />
-            <div className="flex space-x-4">
+            <div className="flex flex-wrap gap-4">
               <select value={filterDifficulty} onChange={e => setFilterDifficulty(e.target.value)} className="px-3 py-2 bg-[var(--light-dark)] rounded-lg">
                 <option value="all">Toutes difficultés</option>
                 {[1,2,3,4,5].map(i => <option key={i} value={i}>{i}★</option>)}
@@ -149,7 +149,7 @@ export default function ProgramsPage() {
               <select value={filterDuration} onChange={e => setFilterDuration(e.target.value)} className="px-3 py-2 bg-[var(--light-dark)] rounded-lg">
                 <option value="all">Toutes durées</option>
                 <option value="short">&lt;4 sem.</option>
-                <option value="medium">4-8 sem.</option>
+                <option value="medium">4‑8 sem.</option>
                 <option value="long">&gt;8 sem.</option>
               </select>
               <label className="flex items-center space-x-2">
@@ -159,7 +159,7 @@ export default function ProgramsPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             <AnimatePresence>
               {filtered.map(program => (
                 <motion.div key={program.uuid} variants={fadeVariants} initial="hidden" animate="visible" exit="hidden">
