@@ -14,16 +14,16 @@ export default function SettingsPage() {
   const router = useRouter();
   const [active, setActive] = useState('payments');
   const [loading, setLoading] = useState(true);
+
+  // Dummy data
   const [payments, setPayments] = useState([]);
   const plans = ['Gratuit', 'Premium', 'Premium+'];
   const [subscription, setSubscription] = useState('Gratuit');
 
+  // Auth redirect
   useEffect(() => {
-    if (!authLoading && !user) {
-      router.replace('/login?from=settings');
-    } else if (user) {
-      setLoading(false);
-    }
+    if (!authLoading && !user) router.replace('/login?from=settings');
+    else if (user) setLoading(false);
   }, [authLoading, user, router]);
 
   const handleSignOut = async () => {
@@ -34,7 +34,7 @@ export default function SettingsPage() {
   if (authLoading || loading) {
     return (
       <Layout>
-        <div className="flex items-center justify-center h-screen w-screen bg-[var(--background)]">
+        <div className="flex items-center justify-center h-screen w-screen">
           <Loader />
         </div>
       </Layout>
@@ -43,16 +43,16 @@ export default function SettingsPage() {
 
   const tabs = [
     { key: 'payments', label: 'Méthodes de paiement' },
-    { key: 'subscriptions', label: 'Abonnements & achats' },
+    { key: 'subscriptions', label: 'Abonnements' },
     { key: 'account', label: 'Mon compte' },
   ];
 
   return (
     <Layout>
       <Header />
-      <main className="w-screen min-h-screen relative bg-[var(--background)] text-[var(--text1)]">
+      <main className="w-full min-h-screen relative overflow-x-hidden">
         {/* Full background image */}
-        <div className="absolute inset-0">
+        <div className="fixed inset-0 -z-10">
           <Image
             src="/images/hero-bg.jpg"
             alt="Background"
@@ -60,27 +60,26 @@ export default function SettingsPage() {
             className="object-cover object-center"
           />
         </div>
-        <div className="absolute inset-0 bg-[var(--background)]/40" />
 
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.4 }}
-          className="relative z-10 mx-auto mt-24 mb-16 w-full max-w-4xl bg-transparent backdrop-blur-2xl rounded-3xl p-8 shadow-xl"
+          className="relative z-10 mx-auto mt-24 mb-16 w-full max-w-xl bg-transparent backdrop-blur-lg rounded-3xl p-8"
         >
           <h1 className="text-4xl font-bold mb-6 text-center">Paramètres</h1>
 
-          {/* Tabs navigation - full width */}
+          {/* Tabs navigation full width */}
           <nav className="mb-8">
             <ul className="flex w-full">
               {tabs.map(tab => (
                 <li key={tab.key} className="flex-1">
                   <button
                     onClick={() => setActive(tab.key)}
-                    className={`w-full text-center py-3 text-md font-medium transition 
+                    className={`w-full py-3 font-medium transition 
                       ${active === tab.key
-                        ? 'bg-[var(--green2)] text-[var(--background)]'
-                        : 'text-[var(--text2)] hover:bg-[var(--light-dark)] hover:text-[var(--text1)]'}
+                        ? 'bg-[var(--green2)] text-white'
+                        : 'text-white/70 hover:text-white'}
                     `}
                   >
                     {tab.label}
@@ -90,31 +89,31 @@ export default function SettingsPage() {
             </ul>
           </nav>
 
-          {/* Tab content */}
+          {/* Tab contents */}
           <div className="space-y-6">
+            {/* Payments */}
             {active === 'payments' && (
               <div className="space-y-4">
                 {payments.length === 0 ? (
-                  <p className="text-[var(--text2)]">Aucune méthode de paiement enregistrée.</p>
+                  <p className="text-white/70">Aucune méthode de paiement enregistrée.</p>
                 ) : (
                   payments.map(p => (
-                    <div key={p.id} className="flex justify-between p-4 bg-[var(--light-dark)] rounded-lg">
-                      <span>{p.method}</span>
-                      <button className="text-red-500 hover:text-red-400">Supprimer</button>
+                    <div key={p.id} className="flex justify-between p-4 bg-white/10 rounded-lg">
+                      <span className="text-white">{p.method}</span>
+                      <button className="text-red-400 hover:text-red-300">Supprimer</button>
                     </div>
                   ))
                 )}
-                <button className="mt-4 w-full py-3 bg-[var(--green2)] hover:bg-[var(--green3)] text-[var(--background)] rounded-lg transition">
-                  Ajouter une méthode
-                </button>
+                <button className="w-full py-3 bg-[var(--green2)] text-white rounded-lg">Ajouter une méthode</button>
               </div>
             )}
 
+            {/* Subscriptions */}
             {active === 'subscriptions' && (
               <div className="space-y-4">
                 <div>
-                  <h2 className="font-medium">Plan actuel :</h2>
-                  <p className="mt-2 text-lg font-semibold">{subscription}</p>
+                  <h2 className="text-white/80">Plan actuel :</h2>
+                  <p className="mt-2 text-xl font-semibold text-white">{subscription}</p>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   {plans.map(plan => (
@@ -123,8 +122,8 @@ export default function SettingsPage() {
                       onClick={() => setSubscription(plan)}
                       className={`py-3 rounded-lg w-full transition 
                         ${subscription === plan
-                          ? 'bg-[var(--green2)] text-[var(--background)]'
-                          : 'bg-[var(--light-dark)] text-[var(--text1)] hover:bg-[var(--details-dark)]'}
+                          ? 'bg-[var(--green2)] text-white'
+                          : 'bg-white/10 text-white/80 hover:bg-white/20'}
                       `}
                     >
                       {plan}
@@ -134,12 +133,13 @@ export default function SettingsPage() {
               </div>
             )}
 
+            {/* Account */}
             {active === 'account' && (
               <div className="space-y-6">
-                <p>Email : <span className="font-semibold">{user.email}</span></p>
+                <p className="text-white">Email : <span className="font-semibold">{user.email}</span></p>
                 <button
                   onClick={handleSignOut}
-                  className="w-full py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg transition"
+                  className="w-full py-3 bg-red-600 text-white rounded-lg hover:bg-red-500 transition"
                 >
                   Se déconnecter
                 </button>
