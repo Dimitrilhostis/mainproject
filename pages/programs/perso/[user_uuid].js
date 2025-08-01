@@ -83,7 +83,6 @@ export default function UserProgramsPage() {
 
   return (
     <Layout>
-      <Header />
       <main className="pt-24 pb-12 bg-[var(--background)] text-[var(--text1)] min-h-screen">
         <div className="max-w-5xl mx-auto px-6">
           <h1 className="text-4xl font-bold text-[var(--green2)] mb-12 text-center">
@@ -103,7 +102,7 @@ export default function UserProgramsPage() {
               ) : (
                 <div className="text-center">
                   <p className="mb-4 text-[var(--text2)]">Aucun plan nutritionnel trouvé.</p>
-                  <Link href="/programs/perso/form">
+                  <Link href="/form">
                     <a className="inline-block px-6 py-3 bg-[var(--green2)] text-[var(--background)] rounded-lg font-medium hover:bg-[var(--green3)] transition">
                       Créer mon programme Nutrition
                     </a>
@@ -124,7 +123,7 @@ export default function UserProgramsPage() {
               ) : (
                 <div className="text-center">
                   <p className="mb-4 text-[var(--text2)]">Aucun programme sportif trouvé.</p>
-                  <Link href="/programs/perso/form">
+                  <Link href="/form">
                     <a className="inline-block px-6 py-3 bg-[var(--green2)] text-[var(--background)] rounded-lg font-medium hover:bg-[var(--green3)] transition">
                       Créer mon programme Sport
                     </a>
