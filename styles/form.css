@@ -1,0 +1,70 @@
+/* Fond plein écran avec image + overlay sombre */
+.form-page {
+    background: 
+      linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)),
+      url('/images/hero-bg.jpg') center/cover no-repeat;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  /* Conteneur du formulaire */
+  .form-container {
+    background-color: var(--details-dark);
+    padding: 2rem;
+    border-radius: 1.5rem;
+    width: 100%;
+    max-width: 480px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+  }
+  
+  /* Titre de question */
+  .form-container h2 {
+    color: var(--text1);
+    margin-bottom: 1.5rem;
+  }
+  
+  /* Inputs textes/number/date */
+  .form-container input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background-color: var(--light-dark);
+    color: var(--text1);
+    border: none;
+    border-radius: 0.75rem;
+    font-size: 1rem;
+    margin-bottom: 1.25rem;
+  }
+  
+  /* Boutons (utilise ton composant <Button />) */
+  .btn {
+    width: 100%;
+    padding: 0.75rem;
+    border-radius: 0.75rem;
+    font-weight: 600;
+    text-align: center;
+  }
+  
+  .btn-outline {
+    background-color: transparent;
+    color: var(--text1);
+    border: 2px solid var(--green1);
+  }
+  
+  .btn-primary {
+    background-color: var(--green1);
+    color: var(--background);
+  }
+  
+  .btn-success {
+    background-color: var(--green2);
+    color: var(--background);
+    margin-top: 1rem;
+  }
+  
+  /* Désactivation */
+  .btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }

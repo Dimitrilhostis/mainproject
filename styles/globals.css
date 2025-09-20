@@ -8,6 +8,18 @@
   --text1:   #F3F4F6;
   --text2: #D1D5DB;
   --text3: #9CA3AF;
+  /* Or / Premium */
+  --premium-light: #ffd966;
+  --premium: #dfa81c;
+  --premium-dark: #b87700;
+
+  --premium-gradient: linear-gradient(
+    90deg,
+    var(--premium-light) 0%,
+    var(--premium) 35%,
+    var(--premium-dark) 70%,
+    var(--premium-light) 100%
+  );
 }
 
 /* Import Tailwind (génère bg-[var(--…)] au build !) */
@@ -36,6 +48,32 @@ html {
   overflow: hidden;
   z-index: 1;
 }
+
+@keyframes gold-shine {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
+}
+
+.premium-text-animated {
+  background: linear-gradient(
+    90deg,
+    var(--premium-light),
+    var(--premium),
+    var(--premium-dark),
+    var(--premium-light)
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shine 3s linear infinite;
+}
+
+.scrollbox { scrollbar-width: thin; scrollbar-color: var(--light-dark) transparent; }
+.scrollbox::-webkit-scrollbar { width: 10px; }
+.scrollbox::-webkit-scrollbar-track { background: var(--details-dark); border-radius: 9999px; }
+.scrollbox::-webkit-scrollbar-thumb { background: var(--light-dark); border-radius: 9999px; }
+.scrollbox:hover::-webkit-scrollbar-thumb { background: var(--text3); }
+
 
 .bubbles span {
   position: absolute;
@@ -67,4 +105,13 @@ html {
     transform: translateY(-200vh) scale(1.2);
     opacity: 0;
   }
+}
+
+@keyframes scroll {
+  0%   { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
+}
+
+.animate-scroll {
+  animation: scroll 3s linear infinite;
 }
