@@ -8,7 +8,7 @@ import Layout from "@/components/layout";
 import Header from "@/components/header";
 import { CATALOG } from "@/components/catalog/e-books";
 import BackButton from "@/components/buttons/back_button";
-import { Feature, Gallery, PagesPreview, Tabs, RecommendationsPanel, BottomRightEbooksDock } from "./[uuid]/functions";
+import { Feature, Gallery, PagesPreview, Tabs, RecommendationsPanel } from "@/lib/ebook_functions";
 
 /**
  * Page de vente d'e‑book (focus conversion)
