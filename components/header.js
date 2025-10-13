@@ -27,25 +27,26 @@ const navItems = [
   { href: '/settings', icon: <IoSettingsSharp size={24} />, label: 'Paramètres' }
 ];
 
-export default function Header() {
+export default function Header({scroll_x=200, time_s=3}) {
   const router = useRouter();
   const pathname = usePathname();
   const goTo = (href) => () => router.push(href);
   const [scrolled, setScrolled] = useState(false);
 
 useEffect(() => {
-  const onScroll = () => setScrolled(window.scrollY > 200);
-  window.addEventListener('scroll', onScroll);
+  const onScroll = () => setScrolled(window.scrollY > scroll_x);
   onScroll(); // pour initialiser au chargement
+  window.addEventListener('scroll', onScroll);
+  console.log("Header threshold:", scroll_x);
   return () => window.removeEventListener('scroll', onScroll);
-}, []);
+}, [scroll_x]);
 
   return (
     <>
       {/* Desktop header */}
       <header 
       className={`
-    fixed top-0 w-full z-50 hidden md:block transition-colors duration-300
+    fixed top-0 w-full z-50 hidden md:block transition-colors duration-${time_s}00
     ${scrolled
       ? 'bg-[var(--background)] border-b border-[var(--details-dark)]'
       : 'bg-transparent border-b border-transparent'}

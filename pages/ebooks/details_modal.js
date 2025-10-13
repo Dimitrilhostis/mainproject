@@ -1,4 +1,4 @@
-// components/details_modal.jsx
+  // components/details_modal.jsx
 "use client";
 
 import { useEffect } from "react";
@@ -25,12 +25,19 @@ export default function DetailsModal({ book, onClose }) {
     ? book.descriptions.slice(0, 5)
     : null;
 
-  const targetId = book?.id ?? book?.key ?? "";
-  const goToBook = () => {
-    if (book?.link) return router.push(book.link);
-    if (targetId) return router.push(`/ebooks/${targetId}`);
-    // Fallback : rien si pas d’ID/lien
-  };
+    const getTargetId = (b) => b?.uuid ?? b?.key ?? b?.id ?? "";
+
+    const goToBook = (e) => {
+      // évite d’ouvrir le modal si tu as un onClick parent
+      e?.stopPropagation?.();
+    
+      // priorité à un lien explicite, sinon la route dynamique /ebooks/[uuid]
+      const id = getTargetId(book);
+      const href = book?.link || (id ? `/ebooks/${encodeURIComponent(id)}` : null);
+    
+      if (href) router.push(href);
+      // sinon: pas d’action (pas d’ID dispo)
+    };
 
   return (
     <div

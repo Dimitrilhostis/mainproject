@@ -241,16 +241,16 @@ export default function HomePage() {
         {/* Footer (NOIR) */}
         <footer className="bg-[var(--background)] py-12 text-[var(--text3)] border-t border-[var(--details-dark)]">
           <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-6 px-6">
-            {["À propos", "Services", "Ressources", "Contact"].map((col, idx) => (
+            {[
+              { label: "Qui suis-je ?", href: "/portfolio" },
+              { label: "Qui êtes-vous ?", href: "/" },
+              { label: "Qui sommes-nous ?", href: "/" },
+              { label: "Me contacter", href: "mailto:dimit.lhostis@gmail.com" },
+            ].map((item, idx) => (
               <div key={idx}>
-                <h4 className="font-semibold text-[var(--text1)] mb-2">{col}</h4>
-                <ul className="space-y-1">
-                  <li>
-                    <Link href="/settings">
-                      <p className="hover:underline">{col}</p>
-                    </Link>
-                  </li>
-                </ul>
+                <Link href={item.href}>
+                  <p className="hover:underline">{item.label}</p>
+                </Link>
               </div>
             ))}
           </div>

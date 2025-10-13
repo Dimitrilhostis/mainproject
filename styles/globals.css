@@ -20,6 +20,16 @@
     var(--premium-dark) 70%,
     var(--premium-light) 100%
   );
+
+  --neutral-light: #f3f4f6;
+  --neutral:       #34D399; /* ≈ text1 */
+  --neutral-dark:  #e5e7eb; /* gris clair */
+  --neutral-gradient: linear-gradient(
+    90deg,
+    var(--neutral-light) 0%,
+    var(--neutral) 50%,
+    var(--neutral-dark) 100%
+  );
 }
 
 /* Import Tailwind (génère bg-[var(--…)] au build !) */
@@ -67,6 +77,8 @@ html {
   -webkit-text-fill-color: transparent;
   animation: shine 3s linear infinite;
 }
+
+
 
 .scrollbox { scrollbar-width: thin; scrollbar-color: var(--light-dark) transparent; }
 .scrollbox::-webkit-scrollbar { width: 10px; }
