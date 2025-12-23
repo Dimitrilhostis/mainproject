@@ -8,11 +8,13 @@ import { LuCrown } from 'react-icons/lu';
 import { CiClock1 } from 'react-icons/ci';
 import { PiPath } from 'react-icons/pi';
 import { IoSettingsSharp } from 'react-icons/io5';
+import { BiFoodMenu } from "react-icons/bi";
 import { useState, useEffect } from 'react';
 
 const sections = [
   { label: 'Accueil', href: '/' },
   { label: 'Programmes', href: '/programs' },
+  { label: 'Recettes', href: '/recipes' },
   { label: 'Roadmaps', href: '/roadmaps' },
   { label: 'E‑books', href: '/ebooks' },
   { label: 'Outils', href: '/timer' },
@@ -20,12 +22,24 @@ const sections = [
 ];
 
 const navItems = [
-  { href: '/roadmaps', icon: <ImBook size={24} />, label: 'Services' },
-  { href: '/ebooks', icon: <PiPath size={24} />, label: 'Services' },
+  { href: '/roadmaps', icon: <ImBook size={24} />, label: 'Roadmaps' },
+  { href: '/ebooks', icon: <PiPath size={24} />, label: 'Ebooks' },
+  { href: '/recipes', icon: <BiFoodMenu size={24} />, label: 'Recipes' },
   { href: '/programs', icon: <LuCrown size={24} />, label: 'Programmes' },
   { href: '/timer', icon: <CiClock1 size={24} />, label: 'Timer' },
   { href: '/settings', icon: <IoSettingsSharp size={24} />, label: 'Paramètres' }
 ];
+
+const isActiveHref = (pathname, href) => {
+  if (typeof pathname !== "string") return false;
+
+  if (href === "/") {
+    return pathname === "/";
+  }
+
+  return pathname === href || pathname.startsWith(href + "/");
+};
+
 
 export default function Header({scroll_x=200, time_s=3}) {
   const router = useRouter();
@@ -56,23 +70,24 @@ useEffect(() => {
         <nav className="max-w-7xl mx-auto flex items-center justify-between py-4 px-6">
           <div className="text-2xl font-bold text-[var(--green2)]">The Smart Way</div>
           <ul className="flex space-x-6">
-            {sections.map(({ label, href }) => {
-              const isActive = pathname === href;
-              return (
-                <li key={href}>
-                  <button
-                    onClick={goTo(href)}
-                    className={`hover:underline ${
-                      isActive
-                        ? 'text-[var(--green2)] font-semibold'
-                        : 'text-[var(--text1)]'
-                    }`}
-                  >
-                    {label}
-                  </button>
-                </li>
-              );
-            })}
+          {sections.map(({ label, href }) => {
+            const isActive = isActiveHref(pathname, href);
+
+            return (
+              <li key={href}>
+                <button
+                  onClick={goTo(href)}
+                  className={`hover:underline ${
+                    isActive
+                      ? "text-[var(--green2)] font-semibold"
+                      : "text-[var(--text1)]"
+                  }`}
+                >
+                  {label}
+                </button>
+              </li>
+            );
+          })}
           </ul>
         </nav>
       </header>

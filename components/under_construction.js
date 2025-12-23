@@ -5,7 +5,6 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import Header from "@/components/header";
 import Loader from "@/components/loader";
-import Button from "@/components/buttons/button";
 import { useAuth } from "@/contexts/auth_context";
 
 export default function UnderConstructionPage() {
