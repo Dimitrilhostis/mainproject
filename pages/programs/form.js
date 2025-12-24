@@ -177,24 +177,29 @@ export default function FormPage() {
         return `👉 ${q.question}\n   → ${answer || "Non répondu"}`;
       })
       .join("\n\n");
-
+  
     const templateParams = {
       from_name: answers[1] || "Utilisateur anonyme",
+      reply_to: answers[14] || "",
+      user_email: answers[14] || "",
+      user_phone: answers[15] || "",
       message: formattedAnswers,
     };
-
+  
     try {
       const serviceID = "service_l3kqtfi";
       const templateID = "template_2uzivoc";
       const publicKey = "8GwB2QOn688am10ID";
-
-      await emailjs.send(serviceID, templateID, templateParams, publicKey);
+  
+      const res = await emailjs.send(serviceID, templateID, templateParams, publicKey);
+      console.log("EmailJS OK:", res);
       setSubmitted(true);
     } catch (error) {
-      console.error("Erreur d’envoi :", error);
-      alert("❌ L’envoi du mail a échoué. Vérifie ta configuration EmailJS.");
+      console.error("Erreur EmailJS:", error);
+      alert(`❌ Envoi échoué.\n\n${error?.text || error?.message || "Erreur inconnue"}`);
     }
   };
+  
 
   return (
     <Layout>
@@ -214,7 +219,7 @@ export default function FormPage() {
               </h2>
 
               {/* 🟩 Champs selon le type */}
-              {["text", "number"].includes(currentQuestion.type) && (
+              {["text", "number", "email"].includes(currentQuestion.type) && (
                 <input
                   type={currentQuestion.type}
                   placeholder={currentQuestion.placeholder || ""}
