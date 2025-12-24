@@ -1,5 +1,6 @@
 // components/programs/DayCard.jsx
 "use client";
+import Image from "next/image";
 
 export default function DayCard({ day, compact, hideTitle }) {
   const energy = day.energy || 0;
@@ -15,7 +16,7 @@ export default function DayCard({ day, compact, hideTitle }) {
       {/* Image */}
       {day.image_path && (
         <div className="mb-3 h-32 overflow-hidden rounded-xl bg-black/40">
-          <img
+          <Image
             src={day.image_path}
             alt={day.title}
             className="h-full w-full object-cover"

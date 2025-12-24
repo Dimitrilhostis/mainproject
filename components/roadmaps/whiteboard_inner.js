@@ -393,7 +393,7 @@ export default function WhiteboardInner({
 
     setHoveredGroup(null);
     setDragState(null);
-  }, [isEditable, getIntersectingNodes, removeNodeAndEdgesDeep, skipDeleteConfirm, showToast]);
+  }, [isEditable, getIntersectingNodes, removeNodeAndEdgesDeep, skipDeleteConfirm, showToast, isPointInTrash, setNodes]);
 
   
 

@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import Layout from "@/components/layout";
-import emailjs from "emailjs-com";
+import emailjs from "emailjs/browser";
 import Link from "next/link";
 
 // 🧠 Questions personnalisées

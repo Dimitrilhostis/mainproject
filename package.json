@@ -12,6 +12,7 @@
     "postcss": "8.4.38"
   },
   "dependencies": {
+    "@emailjs/browser": "^4.4.1",
     "@heroicons/react": "^2.2.0",
     "@react-three/drei": "^10.1.2",
     "@react-three/fiber": "^9.1.2",
@@ -20,7 +21,6 @@
     "bcrypt": "^6.0.0",
     "clsx": "^2.1.1",
     "cookie-parser": "^1.4.7",
-    "emailjs-com": "^3.2.0",
     "fabric": "^6.7.0",
     "framer-motion": "^12.10.5",
     "gsap": "^3.13.0",
